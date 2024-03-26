@@ -1,9 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 
-# Create an empty list for the transactions of all accounts
-# transactions = list()
-
 # Create variables that indicate the inventory of each item
 VANILLA = 0
 CHOCOLATE = 0
