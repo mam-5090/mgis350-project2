@@ -12,13 +12,25 @@ HOT_F = 0
 SALES = 0.00
 EXPENSES = 0.00
 PROFIT = 0.00
+order_revenue = 0.00
 
 # variable with user feedback
 FEEDBACK = " "
 
 
+# Function to update displays
+def update_displays():
+    lbl_vanilla["text"] = VANILLA
+    lbl_chocolate["text"] = CHOCOLATE
+    lbl_sprinkles["text"] = SPRINKLES
+    lbl_cream["text"] = WHIP_CREAM
+    lbl_fudge["text"] = HOT_F
+    lbl_sales_output["text"] = SALES
+    lbl_expenses_output["text"] = EXPENSES
+    lbl_profit_output["text"] = PROFIT
 
 def add_inventory():
+    global EXPENSES, SALES, PROFIT, VANILLA, CHOCOLATE, SPRINKLES, WHIP_CREAM, HOT_F
     # pass
 # TODO
 #   get values from checked boxes of what to update
@@ -37,11 +49,35 @@ def add_inventory():
 
 #   update global variables with integer values
 #   see write up for amounts
-#   update expenses with the cost
-#   update profit by subtracting expenses from sales
+#   Calculating the expense of adding inventory | DONE - Julian
+    amount_spent = 0
+    if chk_vanilla_var.get() == 1:
+        amount_spent += 15.00 # Cost of adding vanilla
+        VANILLA += 256.0
+    if chk_chocolate_var.get() == 1:
+        amount_spent += 15.00 # Cost of adding chocolate
+        CHOCOLATE += 256.0
+    if chk_sprinkles_add_var.get() == 1:
+        amount_spent += 40.00 # Cost of adding Sprinkles
+        SPRINKLES += 64.0
+    if chk_cream_add_var.get() == 1:
+        amount_spent += 12.00 # Cost of adding Whipped Cream
+        WHIP_CREAM += 64.0
+    if chk_fudge_add_var.get() == 1:
+        amount_spent += 10.00 # Cost of adding Hot Fudge
+        HOT_F += 64.0
+
+#   Updating financial data | DONE - Julian
+    update_finances(expense_change=amount_spent)
+    #update displays
+    print("***DEBUGGING*** amount_spent is:", amount_spent)
+    update_displays()
+
 
 
 def place_order():
+    global EXPENSES, SALES, PROFIT
+
 # TODO
 #   get flavor from radio buttons - DONE plb3509
     #  Get flavor from radio buttons
@@ -61,25 +97,33 @@ def place_order():
 #   place order and call financial data function
 #   The first scoop is $3.00. Each scoop extra is $1.00; calculate cost
 #   update the inventory
-#   update financial data
+#   update financial data    ("order-revenue" MUST BE CALCULATED BEFORE THE UPDATE
+    update_finances(sales_change=order_revenue)   #DONE by JULIAN
 
     # scoops = int(ent_scoops.get())
     # cost = 0.00
     # ADD AN IF GUARD HERE FOR AMT OF SCOOPS TO UPDATE COST
 
 
-def update_finances():
-    pass
-# TODO
-#   Each time the user adds to inventory, expenses will be increased.
-#   Each time an order is made, sales will be increased.
-#   the profit is calculated by subtracting the expenses from the sales.
+def update_finances(expense_change=0, sales_change=0):     # | DONE - JULIAN
+    global EXPENSES, SALES, PROFIT
+    # pass
+    # DONE - Julian
+    #   Each time the user adds to inventory, expenses will be increased.
+    EXPENSES += expense_change
+    #   Each time an order is made, sales will be increased.
+    SALES += sales_change
+    #   the profit is calculated by subtracting the expenses from the sales.
 
+    PROFIT = SALES - EXPENSES
 
-def user_feedback():
-    pass
-# TODO
-#   update textbox with necessary error
+    #  Updating the GUI - commenting out as update_displays function replaces this plb3509
+    #expenses_label.config(text=f"\t${EXPENSES:.2f}")
+    #sales_label.config(text=f"\t${SALES:.2f}")
+    #profit_label.config(text=f"\t${PROFIT:.2f}")
+
+def user_feedback(message):      #  |    DONE - JULIAN
+    FEEDBACK.set(message)
 
 
 # Creating window
@@ -95,11 +139,35 @@ tk.Label(root_window, text="Sprinkles:").grid(row=3, column=0, sticky=tk.W)
 tk.Label(root_window, text="Whipped cream:").grid(row=4, column=0, sticky=tk.W)
 tk.Label(root_window, text="Hot fudge:").grid(row=5, column=0, sticky=tk.W)
 
-tk.Label(root_window, text=VANILLA).grid(row=1, column=1, sticky=tk.W)
-tk.Label(root_window, text=CHOCOLATE).grid(row=2, column=1, sticky=tk.W)
-tk.Label(root_window, text=SPRINKLES).grid(row=3, column=1, sticky=tk.W)
-tk.Label(root_window, text=WHIP_CREAM).grid(row=4, column=1, sticky=tk.W)
-tk.Label(root_window, text=HOT_F).grid(row=5, column=1, sticky=tk.W)
+lbl_vanilla = tk.Label(root_window, text=VANILLA)
+lbl_vanilla.grid(row=1, column=1, sticky=tk.W)
+lbl_chocolate = tk.Label(root_window, text=CHOCOLATE)
+lbl_chocolate.grid(row=2, column=1, sticky=tk.W)
+lbl_sprinkles = tk.Label(root_window, text=SPRINKLES)
+lbl_sprinkles.grid(row=3, column=1, sticky=tk.W)
+lbl_cream = tk.Label(root_window, text=WHIP_CREAM)
+lbl_cream.grid(row=4, column=1, sticky=tk.W)
+lbl_fudge = tk.Label(root_window, text=HOT_F)
+lbl_fudge.grid(row=5, column=1, sticky=tk.W)
+
+## Defining GUI labels - labels already exist, commenting out plb3509
+#expenses_label=tk.Label(root_window, text=f"\t${EXPENSES:.2f}")
+#expenses_label.grid(row = 2, column = 8, sticky=tk.W)
+
+#sales_label = tk.Label(root_window, text=f"\t${SALES:.2f}")
+#sales_label.grid(row=1, column=8, sticky=tk.W)
+
+#profit_label = tk.Label(root_window, text=f"\t${PROFIT:.2f}")
+#profit_label.grid(row=3, column=8, sticky=tk.W)
+
+
+# FEEDBACK GUI   | DONE - JULIAN
+FEEDBACK = tk.StringVar()
+FEEDBACK.set(" ")
+
+tk.Label(root_window, textvariable=FEEDBACK).grid(row=11, column=0, columnspan=2)
+
+
 
 # ADD TO INVENTORY
 tk.Label(root_window, text="\tADD TO INVENTORY").grid(row=0, column=3)
@@ -173,9 +241,12 @@ tk.Label(root_window, text="\tSales:").grid(row=1, column=7, sticky=tk.W)
 tk.Label(root_window, text="\tExpenses:").grid(row=2, column=7, sticky=tk.W)
 tk.Label(root_window, text="\tProfit:").grid(row=3, column=7, sticky=tk.W)
 
-tk.Label(root_window, text=f"\t${SALES:.2f}").grid(row=1, column=8, sticky=tk.W)
-tk.Label(root_window, text=f"\t${EXPENSES:.2f}").grid(row=2, column=8, sticky=tk.W)
-tk.Label(root_window, text=f"\t${PROFIT:.2f}").grid(row=3, column=8, sticky=tk.W)
+lbl_sales_output = tk.Label(root_window, text="0")
+lbl_sales_output.grid(row=1, column=8, sticky=tk.W)
+lbl_expenses_output = tk.Label(root_window, text="0")
+lbl_expenses_output.grid(row=2, column=8, sticky=tk.W)
+lbl_profit_output = tk.Label(root_window, text="0")
+lbl_profit_output.grid(row=3, column=8, sticky=tk.W)
 
 
 # USER FEEDBACK (done)
