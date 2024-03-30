@@ -17,7 +17,6 @@ PROFIT = 0.00
 FEEDBACK = " "
 
 
-
 def add_inventory():
     # pass
     chocolate_get_inv = chk_chocolate_var.get()
@@ -104,7 +103,6 @@ tk.Label(root_window, text=HOT_F).grid(row=5, column=1, sticky=tk.W)
 # ADD TO INVENTORY
 tk.Label(root_window, text="\tADD TO INVENTORY").grid(row=0, column=3)
 
-
 # Variables to store checkbox selections
 chk_vanilla_var = tk.IntVar()
 chk_chocolate_var = tk.IntVar()
@@ -142,7 +140,7 @@ tk.Label(root_window, text="\tScoops:").grid(row=1, column=4)
 ent_scoops = tk.Entry(root_window, width=5)
 ent_scoops.grid(row=1, column=5, sticky=tk.W)
 
-# TODO add radio buttons for Vanilla/Chocolate row 2 - DONE plb3509
+#  add radio buttons for Vanilla/Chocolate row 2 - DONE plb3509
 # Variable to store flavor choice
 flavor_choice = tk.StringVar()
 # Chocolate RadioButton
@@ -157,14 +155,17 @@ rdo_vanilla.grid(row=2, column=6, sticky=tk.W)
 chk_sprinkles_var = tk.IntVar()
 chk_cream_var = tk.IntVar()
 chk_fudge_var = tk.IntVar()
+
 #  add check boxes for Sprinkles, row 3 - DONE plb3509
 # Sprinkles checkbox (order form)
 chk_sprinkles = tk.Checkbutton(root_window, text="Sprinkles", variable=chk_sprinkles_var)
 chk_sprinkles.grid(row=3, column=5, sticky=tk.W)
+
 #  Whipped Cream, row4 - Done plb3509
 # Whipped Cream checkbox (order form)
 chk_cream = tk.Checkbutton(root_window, text="Whipped Cream", variable=chk_cream_var)
 chk_cream.grid(row=4, column=5, sticky=tk.W)
+
 #  and Hot Fudge row5 - Done plb3509
 # Hot Fudge checkbox (order form)
 chk_fudge = tk.Checkbutton(root_window, text="Hot Fudge", variable=chk_fudge_var)
@@ -187,6 +188,8 @@ tk.Label(root_window, text=f"\t${PROFIT:.2f}").grid(row=3, column=8, sticky=tk.W
 # USER FEEDBACK (done)
 tk.Label(root_window, text="USER FEEDBACK:").grid(row=10, column=0)
 tk.Label(root_window, text=FEEDBACK).grid(row=11, column=0)
+
+root_window.mainloop()
 
 
 # code below is copy pasted from class
@@ -221,4 +224,4 @@ tk.Label(root_window, text=FEEDBACK).grid(row=11, column=0)
 # scr_transactions.grid(row=0,column=1,sticky=tk.N+tk.S+tk.W)
 # lst_transactions['yscrollcommand'] = scr_transactions.set
 
-root_window.mainloop()
+
