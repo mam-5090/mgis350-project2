@@ -17,10 +17,24 @@ PROFIT = 0.00
 FEEDBACK = " "
 
 
+
 def add_inventory():
-    pass
+    # pass
 # TODO
 #   get values from checked boxes of what to update
+    chocolate_get_inv = chk_chocolate_var.get()
+    vanilla_get_inv = chk_vanilla_var.get()
+    sprinkles_get_inv = chk_sprinkles_add_var.get()
+    cream_get_inv = chk_cream_add_var.get()
+    fudge_get_inv = chk_fudge_add_var.get()
+
+    # Ensure checkboxes are pulling properly
+    print("*** DEBUGGING *** Chocolate Checked:", chocolate_get_inv)
+    print("*** DEBUGGING *** Vanilla Checked:", vanilla_get_inv)
+    print("*** DEBUGGING *** Sprinkles Checked:", sprinkles_get_inv)
+    print("*** DEBUGGING *** Whipped Cream checked:", cream_get_inv)
+    print("*** DEBUGGING *** Hot Fudge checked:", fudge_get_inv)
+
 #   update global variables with integer values
 #   see write up for amounts
 #   update expenses with the cost
@@ -28,10 +42,21 @@ def add_inventory():
 
 
 def place_order():
-    pass
 # TODO
-#   get flavor from radio buttons
-#   get values from checked boxes for toppings
+#   get flavor from radio buttons - DONE plb3509
+    #  Get flavor from radio buttons
+    flavor_choice_get = 0
+    flavor_choice_get = flavor_choice.get()
+    print("*** DEBUGGING *** Flavor Choice is: ", flavor_choice_get)
+#   get values from checked boxes for toppings - Done plb3509
+    sprinkles_get = chk_sprinkles_var.get()
+    cream_get = chk_cream_var.get()
+    fudge_get = chk_fudge_var.get()
+
+    # Ensuring checkboxes are pulling properly
+    print("*** DEBUGGING *** Sprinkles checked:", sprinkles_get)
+    print("*** DEBUGGING *** Whipped Cream checked:", cream_get)
+    print("*** DEBUGGING *** Hot Fudge checked:", fudge_get)
 #   check inventory that the items are in stock; display error message if not
 #   place order and call financial data function
 #   The first scoop is $3.00. Each scoop extra is $1.00; calculate cost
@@ -78,32 +103,79 @@ tk.Label(root_window, text=HOT_F).grid(row=5, column=1, sticky=tk.W)
 
 # ADD TO INVENTORY
 tk.Label(root_window, text="\tADD TO INVENTORY").grid(row=0, column=3)
-# TODO check boxes here for all the options (see the write up for particulars)
-# TODO button to "Add To Inventory"
-# TODO code so that pushing the button calls the proper functions
+# TODO check boxes here for all the options (see the write up for particulars) - DONE plb3509
+# Variables to store checkbox selections
+chk_vanilla_var = tk.IntVar()
+chk_chocolate_var = tk.IntVar()
+chk_sprinkles_add_var = tk.IntVar()
+chk_cream_add_var = tk.IntVar()
+chk_fudge_add_var = tk.IntVar()
+# Creating vanilla checkbox
+chk_vanilla = tk.Checkbutton(root_window, text="Add 256.0 oz of Vanilla", variable=chk_vanilla_var)
+chk_vanilla.grid(row=1, column=3, sticky=tk.W)
+# Creating Chocolate checkbox
+chk_chocolate = tk.Checkbutton(root_window, text="Add 256.0 oz of Chocolate", variable=chk_chocolate_var)
+chk_chocolate.grid(row=2, column=3, sticky=tk.W)
+# Creating Sprinkles checkbox
+chk_sprinkles_add = tk.Checkbutton(root_window, text="Add 64.0 oz of Sprinkles", variable=chk_sprinkles_add_var)
+chk_sprinkles_add.grid(row=3, column=3, sticky=tk.W)
+# Creating Whipped Cream checkbox
+chk_cream_add = tk.Checkbutton(root_window, text="Add 64.0 oz of Whipped Cream", variable=chk_cream_add_var)
+chk_cream_add.grid(row=4, column=3, sticky=tk.W)
+# Creating Hot Fudge checkbox
+chk_fudge_add = tk.Checkbutton(root_window, text="Add 64.0 oz of Hot Fudge", variable=chk_fudge_add_var)
+chk_fudge_add.grid(row=5, column=3, sticky=tk.W)
 
+# TODO button to "Add To Inventory" - DONE plb3509
+tk.Button(root_window, text="Add To Inventory", command=add_inventory).grid(row=6, column=3, sticky=tk.W)
+# TODO code so that pushing the button calls the proper functions - DONE plb3509
+# Done via add_inventory command in button code
 
 # ORDER FORM
 tk.Label(root_window, text="\tORDER FORM").grid(row=0, column=4)
 tk.Label(root_window, text="\tScoops:").grid(row=1, column=4)
 ent_scoops = tk.Entry(root_window, width=5)
 ent_scoops.grid(row=1, column=5, sticky=tk.W)
-# TODO add radio buttons for Vanilla/Chocolate row 2
-# TODO add check boxes for Sprinkles, row 3
-# TODO Whipped Cream, row4
-# TODO and Hot Fudge row5
+# TODO add radio buttons for Vanilla/Chocolate row 2 - DONE plb3509
+# Variable to store flavor choice
+flavor_choice = tk.StringVar()
+# Chocolate RadioButton
+rdo_chocolate = tk.Radiobutton(root_window, text="Chocolate", variable=flavor_choice, value="Chocolate")
+rdo_chocolate.grid(row=2, column=5, sticky=tk.W)
+# Vanilla RadioButton
+rdo_vanilla = tk.Radiobutton(root_window, text="Vanilla", variable=flavor_choice, value="Vanilla")
+rdo_vanilla.grid(row=2, column=6, sticky=tk.W)
+
+
+# Variable to store checkbox states
+chk_sprinkles_var = tk.IntVar()
+chk_cream_var = tk.IntVar()
+chk_fudge_var = tk.IntVar()
+# TODO add check boxes for Sprinkles, row 3 - DONE plb3509
+# Sprinkles checkbox (order form)
+chk_sprinkles = tk.Checkbutton(root_window, text="Sprinkles", variable=chk_sprinkles_var)
+chk_sprinkles.grid(row=3, column=5, sticky=tk.W)
+# TODO Whipped Cream, row4 - Done plb3509
+# Whipped Cream checkbox (order form)
+chk_cream = tk.Checkbutton(root_window, text="Whipped Cream", variable=chk_cream_var)
+chk_cream.grid(row=4, column=5, sticky=tk.W)
+# TODO and Hot Fudge row5 - Done plb3509
+# Hot Fudge checkbox (order form)
+chk_fudge = tk.Checkbutton(root_window, text="Hot Fudge", variable=chk_fudge_var)
+chk_fudge.grid(row=5, column=5, sticky=tk.W)
+# Place Order button
 tk.Button(root_window, text="Place Order", command=place_order).grid(row=6, column=5, sticky=tk.W)
 
 
 # FINANCIAL DATA (done)
-tk.Label(root_window, text="\tFINANCIAL DATA").grid(row=0, column=6)
-tk.Label(root_window, text="\tSales:").grid(row=1, column=6, sticky=tk.W)
-tk.Label(root_window, text="\tExpenses:").grid(row=2, column=6, sticky=tk.W)
-tk.Label(root_window, text="\tProfit:").grid(row=3, column=6, sticky=tk.W)
+tk.Label(root_window, text="\tFINANCIAL DATA").grid(row=0, column=7)
+tk.Label(root_window, text="\tSales:").grid(row=1, column=7, sticky=tk.W)
+tk.Label(root_window, text="\tExpenses:").grid(row=2, column=7, sticky=tk.W)
+tk.Label(root_window, text="\tProfit:").grid(row=3, column=7, sticky=tk.W)
 
-tk.Label(root_window, text=f"\t${SALES:.2f}").grid(row=1, column=7, sticky=tk.W)
-tk.Label(root_window, text=f"\t${EXPENSES:.2f}").grid(row=2, column=7, sticky=tk.W)
-tk.Label(root_window, text=f"\t${PROFIT:.2f}").grid(row=3, column=7, sticky=tk.W)
+tk.Label(root_window, text=f"\t${SALES:.2f}").grid(row=1, column=8, sticky=tk.W)
+tk.Label(root_window, text=f"\t${EXPENSES:.2f}").grid(row=2, column=8, sticky=tk.W)
+tk.Label(root_window, text=f"\t${PROFIT:.2f}").grid(row=3, column=8, sticky=tk.W)
 
 
 # USER FEEDBACK (done)
