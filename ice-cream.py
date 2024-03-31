@@ -30,6 +30,7 @@ def update_displays():
     lbl_profit_output["text"] = PROFIT
     lbl_feedback["text"] = FEEDBACK
 
+
 def add_inventory():
     global EXPENSES, SALES, PROFIT, VANILLA, CHOCOLATE, SPRINKLES, WHIP_CREAM, HOT_F
     # pass
@@ -77,8 +78,8 @@ def add_inventory():
 
 
 def place_order():
-    global EXPENSES, SALES, PROFIT, FEEDBACK
-
+    global EXPENSES, SALES, PROFIT, FEEDBACK, CHOCOLATE, VANILLA, HOT_F, SPRINKLES, WHIP_CREAM
+# WEIRD BUG - inventory increases if scoop_count is negative, need additional guard for that but don't want to nest more
 # TODO
 #   get flavor from radio buttons - DONE plb3509
     #  Get flavor from radio buttons
@@ -95,24 +96,61 @@ def place_order():
     print("*** DEBUGGING *** Whipped Cream checked:", cream_get)
     print("*** DEBUGGING *** Hot Fudge checked:", fudge_get)
 #   check inventory that the items are in stock; display error message if not
-#   place order and call financial data function
-#   The first scoop is $3.00. Each scoop extra is $1.00; calculate cost
-    scoop_count = int(ent_scoops.get()) # Code works but doesn't throw an error properly if no number of scoops are entered, needs to be fixed
-    print("***DEBUGGING*** Scoop_count is: ", scoop_count)
-    if scoop_count >= 1:
-        scoop_price = 3 + ((scoop_count - 1) * 2)
-        SALES += scoop_price
-        FEEDBACK = "Order successfully placed"
+    # Grab number of scoops needed
+    scoop_count = int(ent_scoops.get()) # Code works but doesn't throw an error properly if no number of scoops are entered, needs to be fixed WEIRD BUG
+    # run boolean flavor choice function for if guard
+    if flavor_choice.get() == "Chocolate":
+        boo_chocolate = 1
     else:
-        print("ERROR - Please enter a valid number of scoops")
-        FEEDBACK = "ERROR - Please enter a valid number of scoops"
-#   update the inventory
-#   update financial data    ("order-revenue" MUST BE CALCULATED BEFORE THE UPDATE
-    update_finances(sales_change=order_revenue)   #DONE by JULIAN
+        boo_chocolate = 0
+    if flavor_choice.get() == "Vanilla":
+        boo_vanilla = 1
+    else:
+        boo_vanilla = 0
+    print("***DEBUGGING*** boo_chocolate is: ", boo_chocolate)
+    print("***DEBUGGING*** boo_vanilla is: ", boo_vanilla)
+    # variables to store amount needed for each type - using boolean math and having everything rerun every time
+    chocolate_needed = scoop_count * 4 * boo_chocolate
+    vanilla_needed = scoop_count * 4 * boo_vanilla
+    sprinkles_needed = sprinkles_get * .25
+    cream_needed = cream_get * 1
+    fudge_needed = fudge_get * .5
+    # Initial check for negative scoops (causes lots of problems with inventory/expenses)
+    if scoop_count >= 0:
+        # inventory if guard - sorry this kinda turned into spaghetti but technically works
+        # Ensuring process only runs if there is adequate inventory
+        if (
+                CHOCOLATE >= chocolate_needed
+                and VANILLA >= vanilla_needed
+                and SPRINKLES >= sprinkles_needed
+                and WHIP_CREAM >= cream_needed
+                and HOT_F >= fudge_needed
+        ):
+            # Simple math to calculate updates and update storage variables
+            CHOCOLATE -= chocolate_needed
+            VANILLA -= vanilla_needed
+            SPRINKLES -= sprinkles_needed
+            WHIP_CREAM -= cream_needed
+            HOT_F -= fudge_needed
+            FEEDBACK = "Order successfully placed"
+            print("***DEBUGGING*** Scoop_count is: ", scoop_count)
+            # Math to calculate price - I didn't want to nest it but nesting it did fix bug where sales increase without sufficient inventory
+            if scoop_count >= 1:
+                scoop_price = 3 + (scoop_count - 1)
+                SALES += scoop_price
+            else:
+                print("ERROR - Please enter a valid number of scoops")
+                FEEDBACK = "ERROR - Please enter a valid number of scoops"
+            # same with this one, didn't want to nest but ensures finances don't update unless there is sufficient inventory
+            order_revenue = 0
+            update_finances(sales_change=order_revenue)  # DONE by JULIAN
+        else:
+            FEEDBACK = "ERROR - insufficient inventory for order"
+    else:
+        print("ERROR - invalid scoop count")
+        FEEDBACK = "ERROR - invalid scoop count (negative)"
     update_displays()
-    # scoops = int(ent_scoops.get())
-    # cost = 0.00
-    # ADD AN IF GUARD HERE FOR AMT OF SCOOPS TO UPDATE COST
+
 
 
 def update_finances(expense_change=0, sales_change=0):     # | DONE - JULIAN
@@ -132,8 +170,8 @@ def update_finances(expense_change=0, sales_change=0):     # | DONE - JULIAN
     #sales_label.config(text=f"\t${SALES:.2f}")
     #profit_label.config(text=f"\t${PROFIT:.2f}")
 
-def user_feedback(message):      #  |    DONE - JULIAN
-    FEEDBACK.set(message)
+#def user_feedback(message):      #  |    DONE - JULIAN
+ #   FEEDBACK.set(message)
 
 
 # Creating window
