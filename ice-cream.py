@@ -15,7 +15,7 @@ PROFIT = 0.00
 order_revenue = 0.00
 
 # variable with user feedback
-FEEDBACK = " "
+FEEDBACK = "Please add inventory or place an order"
 
 
 # Function to update displays
@@ -28,6 +28,7 @@ def update_displays():
     lbl_sales_output["text"] = SALES
     lbl_expenses_output["text"] = EXPENSES
     lbl_profit_output["text"] = PROFIT
+    lbl_feedback["text"] = FEEDBACK
 
 def add_inventory():
     global EXPENSES, SALES, PROFIT, VANILLA, CHOCOLATE, SPRINKLES, WHIP_CREAM, HOT_F
@@ -76,7 +77,7 @@ def add_inventory():
 
 
 def place_order():
-    global EXPENSES, SALES, PROFIT
+    global EXPENSES, SALES, PROFIT, FEEDBACK
 
 # TODO
 #   get flavor from radio buttons - DONE plb3509
@@ -96,10 +97,19 @@ def place_order():
 #   check inventory that the items are in stock; display error message if not
 #   place order and call financial data function
 #   The first scoop is $3.00. Each scoop extra is $1.00; calculate cost
+    scoop_count = int(ent_scoops.get()) # Code works but doesn't throw an error properly if no number of scoops are entered, needs to be fixed
+    print("***DEBUGGING*** Scoop_count is: ", scoop_count)
+    if scoop_count >= 1:
+        scoop_price = 3 + ((scoop_count - 1) * 2)
+        SALES += scoop_price
+        FEEDBACK = "Order successfully placed"
+    else:
+        print("ERROR - Please enter a valid number of scoops")
+        FEEDBACK = "ERROR - Please enter a valid number of scoops"
 #   update the inventory
 #   update financial data    ("order-revenue" MUST BE CALCULATED BEFORE THE UPDATE
     update_finances(sales_change=order_revenue)   #DONE by JULIAN
-
+    update_displays()
     # scoops = int(ent_scoops.get())
     # cost = 0.00
     # ADD AN IF GUARD HERE FOR AMT OF SCOOPS TO UPDATE COST
@@ -162,10 +172,9 @@ lbl_fudge.grid(row=5, column=1, sticky=tk.W)
 
 
 # FEEDBACK GUI   | DONE - JULIAN
-FEEDBACK = tk.StringVar()
-FEEDBACK.set(" ")
 
-tk.Label(root_window, textvariable=FEEDBACK).grid(row=11, column=0, columnspan=2)
+
+
 
 
 
@@ -251,7 +260,8 @@ lbl_profit_output.grid(row=3, column=8, sticky=tk.W)
 
 # USER FEEDBACK (done)
 tk.Label(root_window, text="USER FEEDBACK:").grid(row=10, column=0)
-tk.Label(root_window, text=FEEDBACK).grid(row=11, column=0)
+lbl_feedback = tk.Label(root_window, text=FEEDBACK)
+lbl_feedback.grid(row=11, column=0)
 
 
 # code below is copy pasted from class
