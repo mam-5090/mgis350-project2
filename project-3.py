@@ -1,21 +1,51 @@
 import tkinter as tk
-# from tkinter import ttk
+from tkinter import ttk
+import sqlite3
+import pathlib
+from tkinter import messagebox
 
-# Create variables that indicate the inventory of each item
-VANILLA = 000.0
-CHOCOLATE = 000.0
-SPRINKLES = 0.0
-WHIP_CREAM = 0.0
-HOT_F = 0.0
+db_file = pathlib.Path("Project 3 Database - Template.sqlite3")
+
+# Test to see if the database exists
+if db_file.exists():
+    print("Database found")
+    # Open the database and set up the cursor
+    conn = sqlite3.connect(db_file)
+    cur = conn.cursor()
+else:
+    messagebox.showerror("DATABASE ERROR", "Database not found!")
+    # Force quit the program
+    quit()
+
+# create tables if not exist
+fin_tbl = "CREATE TABLE IF NOT EXISTS finances( id INT primary key, sales REAL, expenses REAL);"
+inv_tbl = ("CREATE TABLE IF NOT EXISTS inventory( id INT primary key, vanilla REAL, chocolate REAL, sprinkles REAL, "
+       "whipcream REAL, hotfudge REAL);")
+ord_tbl = "CREATE TABLE IF NOT EXISTS orders( id INT primary key, orderNumber INT, lineItemText TEXT);"
+
+cur.execute(fin_tbl)
+cur.execute(inv_tbl)
+cur.execute(ord_tbl)
+
+# Create variables that indicate the inventory of each item and grab current values
+cur.execute("SELECT vanilla, chocolate,sprinkles,whipcream,hotfudge FROM inventory WHERE id = (SELECT MAX(id) FROM inventory);")
+row = cur.fetchone()
+VANILLA = row[0]
+CHOCOLATE = row[1]
+SPRINKLES = row[2]
+WHIP_CREAM = row[3]
+HOT_F = row[4]
+
+# create list of line orders
+line_orders = list()
 
 # Create variables for financial data
-SALES = 0.00
-EXPENSES = 0.00
-PROFIT = 0.00
+cur.execute("SELECT sales, expenses FROM finances WHERE id = (SELECT MAX(id) FROM finances);")
+row = cur.fetchone()
+SALES = row[0]
+EXPENSES = row[1]
+PROFIT = SALES-EXPENSES
 order_revenue = 0.00
-
-# variable with user feedback
-FEEDBACK = "Please add inventory or place an order"
 
 
 # Function to update displays
@@ -28,29 +58,14 @@ def update_displays():
     lbl_sales_output["text"] = SALES
     lbl_expenses_output["text"] = EXPENSES
     lbl_profit_output["text"] = PROFIT
-    lbl_feedback["text"] = FEEDBACK
+    lbl_feedback["text"] = "UPDATE" # TODO update this to change PAST ORDERS
+    # TODO update line items
+    # TODO update PAST ORDER DETAILS
 
 
 def add_inventory():
-    global EXPENSES, SALES, PROFIT, VANILLA, CHOCOLATE, SPRINKLES, WHIP_CREAM, HOT_F
-    # pass
-    #   get values from checked boxes of what to update
-    # chocolate_get_inv = chk_chocolate_var.get()
-    # vanilla_get_inv = chk_vanilla_var.get()
-    # sprinkles_get_inv = chk_sprinkles_add_var.get()
-    # cream_get_inv = chk_cream_add_var.get()
-    # fudge_get_inv = chk_fudge_add_var.get()
+    global VANILLA, CHOCOLATE, SPRINKLES, WHIP_CREAM, HOT_F
 
-    # Ensure checkboxes are pulling properly
-    # print("*** DEBUGGING *** Chocolate Checked:", chocolate_get_inv)
-    # print("*** DEBUGGING *** Vanilla Checked:", vanilla_get_inv)
-    # print("*** DEBUGGING *** Sprinkles Checked:", sprinkles_get_inv)
-    # print("*** DEBUGGING *** Whipped Cream checked:", cream_get_inv)
-    # print("*** DEBUGGING *** Hot Fudge checked:", fudge_get_inv)
-
-    #   update global variables with integer values
-    #   see write up for amounts
-    #   Calculating the expense of adding inventory |
     amount_spent = 0
     if chk_vanilla_var.get() == 1:
         amount_spent += 15.00  # Cost of adding vanilla
@@ -70,20 +85,53 @@ def add_inventory():
 
     #   Updating financial data
     update_finances(expense_change=amount_spent)
-    # update displays
+
+    # TODO write sql statement to update inventory
 
     # print("***DEBUGGING*** amount_spent is:", amount_spent)
     update_displays()
 
 
-def place_order():
-    global EXPENSES, SALES, PROFIT, FEEDBACK, CHOCOLATE, VANILLA, HOT_F, SPRINKLES, WHIP_CREAM
+def add_order():
+    # TODO update line item box
     scoop_count = ent_scoops.get()
 
     if scoop_count.isnumeric() is False:
-        FEEDBACK = "ERROR - type in an integer for scoops"
+        messagebox.showerror("ERROR - type in an integer for scoops")
     elif int(scoop_count) < 1:
-        FEEDBACK = "ERROR - must have at least one scoop"
+        messagebox.showerror("ERROR - must have at least one scoop")
+    else:
+        scoop_count = int(scoop_count)
+
+    flv = flavor_choice.get()
+    sp = ""
+    wc = ""
+    fudge = ""
+    if chk_sprinkles_var.get():
+        sp = " Sprinkles"
+    if chk_cream_var.get():
+        wc = " Whip Cream"
+    if chk_fudge_var.get():
+        fudge = " Hot Fudge"
+
+    order = f"{scoop_count} Scoops {flv}{sp}{wc}{fudge}"
+    # TODO add order to line_orders list
+
+
+
+def cancel_order():
+    pass
+# TODO clear line item box and temp lst
+
+
+def place_order():
+    global CHOCOLATE, VANILLA, HOT_F, SPRINKLES, WHIP_CREAM
+    scoop_count = ent_scoops.get()
+
+    if scoop_count.isnumeric() is False:
+        messagebox.showerror("ERROR - type in an integer for scoops")
+    elif int(scoop_count) < 1:
+        messagebox.showerror("ERROR - must have at least one scoop")
     else:
         scoop_count = int(scoop_count)
 
@@ -103,11 +151,14 @@ def place_order():
         boo_vanilla = 0
         if flavor_choice.get() == "Chocolate":
             boo_chocolate = 1
+            # TODO display this in Line Items
         if flavor_choice.get() == "Vanilla":
             boo_vanilla = 1
+            # TODO display this in Line Items
 
         print("***DEBUGGING*** boo_chocolate is: ", boo_chocolate)
         print("***DEBUGGING*** boo_vanilla is: ", boo_vanilla)
+
         # variables to store amount needed for each type - using boolean math and having everything rerun every time
 
         chocolate_needed = scoop_count * 4 * boo_chocolate
@@ -118,7 +169,7 @@ def place_order():
 
         # Ensuring process only runs if there is adequate inventory
         if boo_vanilla == 0 and boo_chocolate == 0:
-            FEEDBACK = "ERROR - must select either chocolate or vanilla"
+            messagebox.showerror("ERROR - must select either chocolate or vanilla")
         elif (
                 CHOCOLATE >= chocolate_needed
                 and VANILLA >= vanilla_needed
@@ -132,7 +183,6 @@ def place_order():
             SPRINKLES -= sprinkles_needed
             WHIP_CREAM -= cream_needed
             HOT_F -= fudge_needed
-            FEEDBACK = "Order successfully placed"
             # print("***DEBUGGING*** Scoop_count is: ", scoop_count)
 
             # Math to calculate price
@@ -141,7 +191,7 @@ def place_order():
                 scoop_price += (scoop_count - 1)
             update_finances(sales_change=scoop_price)
         else:
-            FEEDBACK = "ERROR - insufficient inventory for order"
+            messagebox.showerror("ERROR - insufficient inventory for order")
 
     update_displays()
 
@@ -156,19 +206,12 @@ def update_finances(expense_change=0, sales_change=0):
     #   the profit is calculated by subtracting the expenses from the sales.
     PROFIT = SALES - EXPENSES
 
-    #  Updating the GUI - commenting out as update_displays function replaces this plb3509
-    # expenses_label.config(text=f"\t${EXPENSES:.2f}")
-    # sales_label.config(text=f"\t${SALES:.2f}")
-    # profit_label.config(text=f"\t${PROFIT:.2f}")
-
-
-# def user_feedback(message):
-#   FEEDBACK.set(message)
+    # TODO write SQL statement to reflect the changes in the above, don't forget to increase ID of lineorder
 
 
 # Creating window
 root_window = tk.Tk()
-root_window.title("Ice Cream Shop")
+root_window.title("Ice Cream Shop; Project 3")
 root_window.geometry("1000x400")
 
 # INVENTORY
@@ -189,19 +232,6 @@ lbl_cream = tk.Label(root_window, text=WHIP_CREAM)
 lbl_cream.grid(row=4, column=1, sticky=tk.W)
 lbl_fudge = tk.Label(root_window, text=HOT_F)
 lbl_fudge.grid(row=5, column=1, sticky=tk.W)
-
-## Defining GUI labels - labels already exist, commenting out plb3509
-# expenses_label=tk.Label(root_window, text=f"\t${EXPENSES:.2f}")
-# expenses_label.grid(row = 2, column = 8, sticky=tk.W)
-
-# sales_label = tk.Label(root_window, text=f"\t${SALES:.2f}")
-# sales_label.grid(row=1, column=8, sticky=tk.W)
-
-# profit_label = tk.Label(root_window, text=f"\t${PROFIT:.2f}")
-# profit_label.grid(row=3, column=8, sticky=tk.W)
-
-
-# FEEDBACK GUI
 
 
 # ADD TO INVENTORY
@@ -228,15 +258,14 @@ chk_cream_add.grid(row=4, column=3, sticky=tk.W)
 chk_fudge_add = tk.Checkbutton(root_window, text="Add 64.0 oz of Hot Fudge", variable=chk_fudge_add_var)
 chk_fudge_add.grid(row=5, column=3, sticky=tk.W)
 
-#  button to "Add To Inventory"
 tk.Button(root_window, text="Add To Inventory", command=add_inventory).grid(row=6, column=3, sticky=tk.W)
+
 
 # ORDER FORM
 tk.Label(root_window, text="\tORDER FORM").grid(row=0, column=4)
 tk.Label(root_window, text="\tScoops:").grid(row=1, column=4)
 ent_scoops = tk.Entry(root_window, width=5)
 ent_scoops.grid(row=1, column=5, sticky=tk.W)
-
 # Variable to store flavor choice
 flavor_choice = tk.StringVar()
 # Chocolate RadioButton
@@ -254,16 +283,19 @@ chk_fudge_var = tk.IntVar()
 # Sprinkles checkbox (order form)
 chk_sprinkles = tk.Checkbutton(root_window, text="Sprinkles", variable=chk_sprinkles_var)
 chk_sprinkles.grid(row=3, column=5, sticky=tk.W)
-
 # Whipped Cream checkbox (order form)
 chk_cream = tk.Checkbutton(root_window, text="Whipped Cream", variable=chk_cream_var)
 chk_cream.grid(row=4, column=5, sticky=tk.W)
-
 # Hot Fudge checkbox (order form)
 chk_fudge = tk.Checkbutton(root_window, text="Hot Fudge", variable=chk_fudge_var)
 chk_fudge.grid(row=5, column=5, sticky=tk.W)
+# add to order button
+tk.Button(root_window, text="Add To Order", command=add_order).grid(row=6, column=5, sticky=tk.W)
+#cancel order button
+tk.Button(root_window, text="Cancel Order", command=cancel_order).grid(row=6, column=5, sticky=tk.W)
 # Place Order button
 tk.Button(root_window, text="Place Order", command=place_order).grid(row=6, column=5, sticky=tk.W)
+
 
 # FINANCIAL DATA
 tk.Label(root_window, text="\tFINANCIAL DATA").grid(row=0, column=7)
@@ -278,11 +310,22 @@ lbl_expenses_output.grid(row=2, column=8, sticky=tk.W)
 lbl_profit_output = tk.Label(root_window, text="0")
 lbl_profit_output.grid(row=3, column=8, sticky=tk.W)
 
+# TODO change this to be Past Orders. also add a show order details button
 # USER FEEDBACK
 tk.Label(root_window, text="USER FEEDBACK:").grid(row=10, column=0)
-lbl_feedback = tk.Label(root_window, text=FEEDBACK)
+lbl_feedback = tk.Label(root_window, text="change")
 lbl_feedback.grid(row=11, column=0)
+
+# TODO add LINE ITEMS
+#  Place Order button
+#  Cancel Order button
+
+# TODO add PAST ORDER DETAILS
+
 
 root_window.mainloop()
 
+# Close the cursor and connection
+cur.close()
+conn.close()
 
