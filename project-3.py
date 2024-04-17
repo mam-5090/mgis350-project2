@@ -1,3 +1,17 @@
+"""
+MGIS-350-02 Spring 2024
+Group 3
+Project 3 due 4/29/24 11:59
+@author Madeline Mariano mam5090
+@author
+@author
+@author
+@author
+
+(please add your name as you work on the project)
+
+NOTE THAT FILE CAN NOT CURRENTLY BE RUN AS IS UNTIL CHANGES ARE MADE
+"""
 import tkinter as tk
 from tkinter import ttk
 import sqlite3
@@ -28,7 +42,7 @@ cur.execute(inv_tbl)
 cur.execute(ord_tbl)
 
 # Create variables that indicate the inventory of each item and grab current values
-cur.execute("SELECT vanilla, chocolate,sprinkles,whipcream,hotfudge FROM inventory WHERE id = (SELECT MAX(id) FROM inventory);")
+cur.execute("SELECT vanilla, chocolate,sprinkles,whipcream,hotfudge FROM inventory WHERE id = 1;")
 row = cur.fetchone()
 VANILLA = row[0]
 CHOCOLATE = row[1]
@@ -42,7 +56,7 @@ order_details = list()
 # scoops choc van sprinkles whippedcream hotfudge
 
 # Create variables for financial data
-cur.execute("SELECT sales, expenses FROM finances WHERE id = (SELECT MAX(id) FROM finances);")
+cur.execute("SELECT sales, expenses FROM finances WHERE id = 1;")
 row = cur.fetchone()
 SALES = row[0]
 EXPENSES = row[1]
@@ -89,13 +103,14 @@ def add_inventory():
     #   Updating financial data
     update_finances(expense_change=amount_spent)
 
-    # TODO write sql statement to update inventory
+    # TODO write sql statement to update inventory SEE WRITE UP (historical data does not need to be saved)
 
     # print("***DEBUGGING*** amount_spent is:", amount_spent)
     update_displays()
 
 
 def add_order():
+    global order_details, line_orders
     scoop_count = ent_scoops.get()
 
     if scoop_count.isnumeric() is False:
@@ -108,9 +123,9 @@ def add_order():
     order_det = f"{scoop_count}"
     flv = flavor_choice.get()
     if flv == "Chocolate":
-        order_det += "0"
+        order_det += "00"
     if flv == "Vanilla":
-        order_det += "1"
+        order_det += "01"
     sp = ""
     wc = ""
     fudge = ""
@@ -146,7 +161,7 @@ def cancel_order():
 
 
 def place_order():
-    global CHOCOLATE, VANILLA, HOT_F, SPRINKLES, WHIP_CREAM, order_details, line_orders
+    global CHOCOLATE, VANILLA, SPRINKLES, WHIP_CREAM, HOT_F, order_details, line_orders
 
     # TODO set values of needed variables below to the index in the string of order_details.
     #  will need to be a for loop since order_details is a list of strings of numbers. don't forget to cast the value as an int
@@ -190,7 +205,15 @@ def place_order():
     else:
         messagebox.showerror("ERROR - insufficient inventory for order")
 
+    cur.execute("SELECT id FROM orders WHERE id = (SELECT MAX(id) FROM orders);")
+    result = cur.fetchone()
+    if result:  # this if guard ensures that if there are no orders placed we begin indexing at 1, else increment by 1
+        new_id = int(result[0]) + 1
+    else:
+        new_id = 1
+
     # TODO for each line_item in line_orders, create an SQL statement to add it to "orders" table
+    #   (don't forget to increase id by using the new_id above and incrementing by 1 for each order in line_orders list)
     # TODO clear line item box
     # TODO clear global line_orders and order_details
     update_displays()
@@ -206,7 +229,7 @@ def update_finances(expense_change=0, sales_change=0):
     #   the profit is calculated by subtracting the expenses from the sales.
     PROFIT = SALES - EXPENSES
 
-    # TODO write SQL statement to reflect the changes in the above, don't forget to increase ID of lineorder
+    # TODO write SQL statement to reflect the changes in the above
 
 
 def past_orders():
@@ -267,7 +290,7 @@ chk_sprinkles_add.grid(row=3, column=3, sticky=tk.W)
 chk_cream_add = tk.Checkbutton(root_window, text="Add 64.0 oz of Whipped Cream", variable=chk_cream_add_var)
 chk_cream_add.grid(row=4, column=3, sticky=tk.W)
 # Creating Hot Fudge checkbox
-chk_fudge_add = tk.Checkbutton(root_window, text="Add 64.0 oz of Hot Fudge", variable=chk_fudge_add_var)
+chk_fudge_add = tk.Checkbutton(root_window, text="Add 48.0 oz of Hot Fudge", variable=chk_fudge_add_var)
 chk_fudge_add.grid(row=5, column=3, sticky=tk.W)
 
 tk.Button(root_window, text="Add To Inventory", command=add_inventory).grid(row=6, column=3, sticky=tk.W)
