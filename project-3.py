@@ -38,6 +38,8 @@ HOT_F = row[4]
 
 # create list of line orders
 line_orders = list()
+order_details = list()
+# scoops choc van sprinkles whippedcream hotfudge
 
 # Create variables for financial data
 cur.execute("SELECT sales, expenses FROM finances WHERE id = (SELECT MAX(id) FROM finances);")
@@ -58,9 +60,10 @@ def update_displays():
     lbl_sales_output["text"] = SALES
     lbl_expenses_output["text"] = EXPENSES
     lbl_profit_output["text"] = PROFIT
-    lbl_feedback["text"] = "UPDATE" # TODO update this to change PAST ORDERS
-    # TODO update line items
-    # TODO update PAST ORDER DETAILS
+    past_orders()
+    # TODO change PAST ORDER DETAILS-- psgpt
+    # TODO update line items -- psgpt
+
 
 
 def add_inventory():
@@ -93,7 +96,6 @@ def add_inventory():
 
 
 def add_order():
-    # TODO update line item box
     scoop_count = ent_scoops.get()
 
     if scoop_count.isnumeric() is False:
@@ -103,96 +105,94 @@ def add_order():
     else:
         scoop_count = int(scoop_count)
 
+    order_det = f"{scoop_count}"
     flv = flavor_choice.get()
+    if flv == "Chocolate":
+        order_det += "0"
+    if flv == "Vanilla":
+        order_det += "1"
     sp = ""
     wc = ""
     fudge = ""
     if chk_sprinkles_var.get():
         sp = " Sprinkles"
+        order_det += "1"
+    else:
+        order_det += "0"
     if chk_cream_var.get():
         wc = " Whip Cream"
+        order_det += "1"
+    else:
+        order_det += "0"
     if chk_fudge_var.get():
         fudge = " Hot Fudge"
+        order_det += "1"
+    else:
+        order_det += "0"
 
     order = f"{scoop_count} Scoops {flv}{sp}{wc}{fudge}"
+
     # TODO add order to line_orders list
+    # TODO add order_det to order_details list
+    #  update line items display box
 
 
 
 def cancel_order():
     pass
-# TODO clear line item box and temp lst
+# TODO clear line item box
+#  clear order_details lst (global)
+#  clear line_orders lst (global)
 
 
 def place_order():
-    global CHOCOLATE, VANILLA, HOT_F, SPRINKLES, WHIP_CREAM
-    scoop_count = ent_scoops.get()
+    global CHOCOLATE, VANILLA, HOT_F, SPRINKLES, WHIP_CREAM, order_details, line_orders
 
-    if scoop_count.isnumeric() is False:
-        messagebox.showerror("ERROR - type in an integer for scoops")
-    elif int(scoop_count) < 1:
-        messagebox.showerror("ERROR - must have at least one scoop")
+    # TODO set values of needed variables below to the index in the string of order_details.
+    #  will need to be a for loop since order_details is a list of strings of numbers. don't forget to cast the value as an int
+    # ORDER OF VALUES IN ELEMENTS OF ORDER_DETAILS scoops choc van sprinkles whippedcream hotfudge
+    # the elements in order_details for example could be 310001 and that would be 3 scoops of chocolate with hot fudge
+    # first number is num of scoops, 0 indicates not in order, 1 indicates yes in order
+
+    scoop_count = 0 # TODO this one too
+
+
+    # boo_chocolate = # TODO this one
+    # boo_vanilla = TODO and this
+    chocolate_needed = scoop_count * 4 * boo_chocolate
+    vanilla_needed = scoop_count * 4 * boo_vanilla
+    sprinkles_needed = float(chk_sprinkles_var.get()) * .25
+    cream_needed = chk_cream_var.get() * 1
+    fudge_needed = float(chk_fudge_var.get()) * .5
+
+
+    # Ensuring process only runs if there is adequate inventory
+    if (
+            CHOCOLATE >= chocolate_needed
+            and VANILLA >= vanilla_needed
+            and SPRINKLES >= sprinkles_needed
+            and WHIP_CREAM >= cream_needed
+            and HOT_F >= fudge_needed
+    ):
+        # Simple math to calculate updates and update storage variables
+        CHOCOLATE -= chocolate_needed
+        VANILLA -= vanilla_needed
+        SPRINKLES -= sprinkles_needed
+        WHIP_CREAM -= cream_needed
+        HOT_F -= fudge_needed
+        # print("***DEBUGGING*** Scoop_count is: ", scoop_count)
+
+        # Math to calculate price
+        scoop_price = 3
+        if scoop_count > 1:
+            scoop_price += (scoop_count - 1)
+        update_finances(sales_change=scoop_price)
     else:
-        scoop_count = int(scoop_count)
+        messagebox.showerror("ERROR - insufficient inventory for order")
 
-        #  Get flavor from radio buttons
-        # flavor_choice_get = flavor_choice.get()
-        # print("*** DEBUGGING *** Flavor Choice is: ", flavor_choice_get)
-
-        # Ensuring checkboxes are pulling properly
-        # print("*** DEBUGGING *** Sprinkles checked:", sprinkles_get)
-        # print("*** DEBUGGING *** Whipped Cream checked:", cream_get)
-        # print("*** DEBUGGING *** Hot Fudge checked:", fudge_get)
-
-        #   check inventory that the items are in stock; display error message if not
-        # Grab number of scoops needed
-        # run boolean flavor choice function for if guard
-        boo_chocolate = 0
-        boo_vanilla = 0
-        if flavor_choice.get() == "Chocolate":
-            boo_chocolate = 1
-            # TODO display this in Line Items
-        if flavor_choice.get() == "Vanilla":
-            boo_vanilla = 1
-            # TODO display this in Line Items
-
-        print("***DEBUGGING*** boo_chocolate is: ", boo_chocolate)
-        print("***DEBUGGING*** boo_vanilla is: ", boo_vanilla)
-
-        # variables to store amount needed for each type - using boolean math and having everything rerun every time
-
-        chocolate_needed = scoop_count * 4 * boo_chocolate
-        vanilla_needed = scoop_count * 4 * boo_vanilla
-        sprinkles_needed = float(chk_sprinkles_var.get()) * .25
-        cream_needed = chk_cream_var.get() * 1
-        fudge_needed = float(chk_fudge_var.get()) * .5
-
-        # Ensuring process only runs if there is adequate inventory
-        if boo_vanilla == 0 and boo_chocolate == 0:
-            messagebox.showerror("ERROR - must select either chocolate or vanilla")
-        elif (
-                CHOCOLATE >= chocolate_needed
-                and VANILLA >= vanilla_needed
-                and SPRINKLES >= sprinkles_needed
-                and WHIP_CREAM >= cream_needed
-                and HOT_F >= fudge_needed
-        ):
-            # Simple math to calculate updates and update storage variables
-            CHOCOLATE -= chocolate_needed
-            VANILLA -= vanilla_needed
-            SPRINKLES -= sprinkles_needed
-            WHIP_CREAM -= cream_needed
-            HOT_F -= fudge_needed
-            # print("***DEBUGGING*** Scoop_count is: ", scoop_count)
-
-            # Math to calculate price
-            scoop_price = 3
-            if scoop_count > 1:
-                scoop_price += (scoop_count - 1)
-            update_finances(sales_change=scoop_price)
-        else:
-            messagebox.showerror("ERROR - insufficient inventory for order")
-
+    # TODO for each line_item in line_orders, create an SQL statement to add it to "orders" table
+    # TODO clear line item box
+    # TODO clear global line_orders and order_details
     update_displays()
 
 
@@ -207,6 +207,18 @@ def update_finances(expense_change=0, sales_change=0):
     PROFIT = SALES - EXPENSES
 
     # TODO write SQL statement to reflect the changes in the above, don't forget to increase ID of lineorder
+
+
+def past_orders():
+    pass
+    # TODO populate the ID numbers of past orders into the textbox(?). see write up
+    #  note THIS WILL REQUIRE SQL CALLS
+
+
+def show_details():
+    pass
+    # TODO show order details of selected order in the PASTORDERS box. see write up
+    #  note THIS WILL REQUIRE SQL CALLS
 
 
 # Creating window
@@ -310,18 +322,12 @@ lbl_expenses_output.grid(row=2, column=8, sticky=tk.W)
 lbl_profit_output = tk.Label(root_window, text="0")
 lbl_profit_output.grid(row=3, column=8, sticky=tk.W)
 
-# TODO change this to be Past Orders. also add a show order details button
-# USER FEEDBACK
-tk.Label(root_window, text="USER FEEDBACK:").grid(row=10, column=0)
-lbl_feedback = tk.Label(root_window, text="change")
-lbl_feedback.grid(row=11, column=0)
+# TODO ADD Past Orders. also add a show order details button note that the line the user selects will be notes
+#  when the button is pressed. the button should call show_details
 
-# TODO add LINE ITEMS
-#  Place Order button
-#  Cancel Order button
 
-# TODO add PAST ORDER DETAILS
-
+# TODO add LINE ITEMS -- psgpt
+# TODO add PAST ORDER DETAILS -- psgpt
 
 root_window.mainloop()
 
