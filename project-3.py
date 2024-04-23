@@ -39,6 +39,7 @@ ord_tbl = "CREATE TABLE IF NOT EXISTS orders( id INT primary key, orderNumber IN
 cur.execute(fin_tbl)
 cur.execute(inv_tbl)
 cur.execute(ord_tbl)
+conn.commit()
 
 # Create variables that indicate the inventory of each item and grab current values
 cur.execute("SELECT vanilla, chocolate,sprinkles,whipcream,hotfudge FROM inventory WHERE id = 1;")
@@ -58,6 +59,7 @@ if row:
 else:
     cur.execute("INSERT INTO inventory(id, vanilla, chocolate, sprinkles, whipcream, hotfudge) VALUES"
                 "(1,0,0,0,0,0);")
+    conn.commit()
 
 # create list of line orders
 print(VANILLA)
@@ -76,6 +78,7 @@ if row:
     EXPENSES = row[1]
 else:
     cur.execute("INSERT INTO finances (id, sales, expenses) VALUES (1, 0.0, 0.0);")
+    conn.commit()
 
 PROFIT = SALES-EXPENSES
 order_revenue = 0.00
@@ -125,6 +128,7 @@ def add_inventory():
          UPDATE inventory
          SET vanilla = ?, chocolate = ?, sprinkles = ?, whipcream = ?, hotfudge = ?
          WHERE id = 1; """, (VANILLA, CHOCOLATE, SPRINKLES, WHIP_CREAM, HOT_F))
+    conn.commit()
     cur.execute("SELECT vanilla, chocolate,sprinkles,whipcream,hotfudge FROM inventory WHERE id = 1;")
     print(cur.fetchone())
 
@@ -146,8 +150,10 @@ def add_order():
     flv = flavor_choice.get()
     if flv == "Chocolate":
         order_det += "00"
+        flv = " Chocolate"
     if flv == "Vanilla":
         order_det += "01"
+        flv = " Vanilla"
     sp = ""
     wc = ""
     fudge = ""
@@ -167,7 +173,7 @@ def add_order():
     else:
         order_det += "0"
 
-    order = f"{scoop_count} Scoops {flv}{sp}{wc}{fudge}"
+    order = f"{scoop_count} Scoops{flv}{sp}{wc}{fudge}"
     line_orders.append(order)
     order_details.append(order_det)
     #  TODO update line items display box
@@ -177,7 +183,7 @@ def cancel_order():
     global order_details, line_orders
     line_orders.clear()
     order_details.clear()
-# TODO clear line item box
+    update_line_items()
 
 # done clear order_details lst (global)
 # done clear line_orders lst (global)
@@ -231,6 +237,7 @@ def place_order():
                     SET vanilla = ?, chocolate = ?, sprinkles = ?, whipcream = ?, hotfudge = ?
                     WHERE id = 1;
                 """, (VANILLA, CHOCOLATE, SPRINKLES, WHIP_CREAM, HOT_F))
+            conn.commit()
 
             # Math to calculate price
             scoop_price = 3
@@ -266,6 +273,16 @@ def update_finances(expense_change=0, sales_change=0):
             SET sales = ?, expenses = ? 
             WHERE id = 1;
         """, (SALES, EXPENSES))
+    conn.commit()
+
+def update_line_items():
+    global line_orders
+    if len(line_orders) == 0:
+        pass
+        # TODO CLEAR THE BOX
+    for order in line_orders:
+        pass
+        # TODO display this order in the line orders text box. see write up
 
 
 def past_orders():
@@ -381,7 +398,7 @@ lbl_profit_output.grid(row=3, column=8, sticky=tk.W)
 #   NOTE the row/column values will need to be changed to reflect new lay out
 # add to order button
 tk.Button(root_window, text="Add To Order", command=add_order).grid(row=6, column=5, sticky=tk.W)
-#cancel order button
+# cancel order button
 tk.Button(root_window, text="Cancel Order", command=cancel_order).grid(row=6, column=5, sticky=tk.W)
 # Place Order button
 tk.Button(root_window, text="Place Order", command=place_order).grid(row=6, column=5, sticky=tk.W)
