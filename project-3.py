@@ -174,10 +174,13 @@ def add_order():
 
 
 def cancel_order():
-    pass
+    global order_details, line_orders
+    line_orders.clear()
+    order_details.clear()
 # TODO clear line item box
-#  clear order_details lst (global)
-#  clear line_orders lst (global)
+
+# done clear order_details lst (global)
+# done clear line_orders lst (global)
 
 
 def place_order():
@@ -241,8 +244,9 @@ def place_order():
         idx += 1
 
     # done for each line_item in line_orders, create an SQL statement to add it to "orders" table
-    # TODO clear line item box
-    # TODO clear global line_orders and order_details
+    # done clear global line_orders and order_details
+
+    cancel_order() # note this isn't actually canceling the order, it is just clearing the screen
     update_displays()
 
 
