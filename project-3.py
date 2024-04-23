@@ -10,7 +10,6 @@ Project 3 due 4/29/24 11:59
 
 (please add your name as you work on the project)
 
-NOTE THAT FILE CAN NOT CURRENTLY BE RUN AS IS UNTIL CHANGES ARE MADE
 """
 import tkinter as tk
 from tkinter import ttk
@@ -44,13 +43,24 @@ cur.execute(ord_tbl)
 # Create variables that indicate the inventory of each item and grab current values
 cur.execute("SELECT vanilla, chocolate,sprinkles,whipcream,hotfudge FROM inventory WHERE id = 1;")
 row = cur.fetchone()
-VANILLA = row[0]
-CHOCOLATE = row[1]
-SPRINKLES = row[2]
-WHIP_CREAM = row[3]
-HOT_F = row[4]
+VANILLA = 0
+CHOCOLATE = 0
+SPRINKLES = 0
+WHIP_CREAM = 0
+HOT_F = 0
+print(row)
+if row:
+    VANILLA = row[0]
+    CHOCOLATE = row[1]
+    SPRINKLES = row[2]
+    WHIP_CREAM = row[3]
+    HOT_F = row[4]
+else:
+    cur.execute("INSERT INTO inventory(id, vanilla, chocolate, sprinkles, whipcream, hotfudge) VALUES"
+                "(1,0,0,0,0,0);")
 
 # create list of line orders
+print(VANILLA)
 line_orders = list()
 order_details = list()
 # scoops choc van sprinkles whippedcream hotfudge
@@ -58,8 +68,15 @@ order_details = list()
 # Create variables for financial data
 cur.execute("SELECT sales, expenses FROM finances WHERE id = 1;")
 row = cur.fetchone()
-SALES = row[0]
-EXPENSES = row[1]
+SALES = 0.00
+EXPENSES = 0.00
+
+if row:
+    SALES = row[0]
+    EXPENSES = row[1]
+else:
+    cur.execute("INSERT INTO finances (id, sales, expenses) VALUES (1, 0.0, 0.0);")
+
 PROFIT = SALES-EXPENSES
 order_revenue = 0.00
 
@@ -77,7 +94,6 @@ def update_displays():
     past_orders()
     # TODO change PAST ORDER DETAILS-- psgpt
     # TODO update line items -- psgpt
-
 
 
 def add_inventory():
@@ -103,9 +119,15 @@ def add_inventory():
     #   Updating financial data
     update_finances(expense_change=amount_spent)
 
-    # TODO write sql statement to update inventory SEE WRITE UP (historical data does not need to be saved)
+    # cur.execute("SELECT vanilla, chocolate,sprinkles,whipcream,hotfudge FROM inventory WHERE id = 1;")
+    # print(cur.fetchone())
+    cur.execute("""
+         UPDATE inventory
+         SET vanilla = ?, chocolate = ?, sprinkles = ?, whipcream = ?, hotfudge = ?
+         WHERE id = 1; """, (VANILLA, CHOCOLATE, SPRINKLES, WHIP_CREAM, HOT_F))
+    cur.execute("SELECT vanilla, chocolate,sprinkles,whipcream,hotfudge FROM inventory WHERE id = 1;")
+    print(cur.fetchone())
 
-    # print("***DEBUGGING*** amount_spent is:", amount_spent)
     update_displays()
 
 
@@ -146,11 +168,9 @@ def add_order():
         order_det += "0"
 
     order = f"{scoop_count} Scoops {flv}{sp}{wc}{fudge}"
-
-    # TODO add order to line_orders list
-    # TODO add order_det to order_details list
-    #  update line items display box
-
+    line_orders.append(order)
+    order_details.append(order_det)
+    #  TODO update line items display box
 
 
 def cancel_order():
@@ -163,57 +183,64 @@ def cancel_order():
 def place_order():
     global CHOCOLATE, VANILLA, SPRINKLES, WHIP_CREAM, HOT_F, order_details, line_orders
 
-    # TODO set values of needed variables below to the index in the string of order_details.
-    #  will need to be a for loop since order_details is a list of strings of numbers. don't forget to cast the value as an int
+    # DONE set values of needed variables below to the index in the string of order_details.
+    # DONE will need to be a for loop since order_details is a list of strings of numbers. don't forget to cast the value as an int
+
     # ORDER OF VALUES IN ELEMENTS OF ORDER_DETAILS scoops choc van sprinkles whippedcream hotfudge
     # the elements in order_details for example could be 310001 and that would be 3 scoops of chocolate with hot fudge
     # first number is num of scoops, 0 indicates not in order, 1 indicates yes in order
 
-    scoop_count = 0 # TODO this one too
-
-
-    # boo_chocolate = # TODO this one
-    # boo_vanilla = TODO and this
-    chocolate_needed = scoop_count * 4 * boo_chocolate
-    vanilla_needed = scoop_count * 4 * boo_vanilla
-    sprinkles_needed = float(chk_sprinkles_var.get()) * .25
-    cream_needed = chk_cream_var.get() * 1
-    fudge_needed = float(chk_fudge_var.get()) * .5
-
-
-    # Ensuring process only runs if there is adequate inventory
-    if (
-            CHOCOLATE >= chocolate_needed
-            and VANILLA >= vanilla_needed
-            and SPRINKLES >= sprinkles_needed
-            and WHIP_CREAM >= cream_needed
-            and HOT_F >= fudge_needed
-    ):
-        # Simple math to calculate updates and update storage variables
-        CHOCOLATE -= chocolate_needed
-        VANILLA -= vanilla_needed
-        SPRINKLES -= sprinkles_needed
-        WHIP_CREAM -= cream_needed
-        HOT_F -= fudge_needed
-        # print("***DEBUGGING*** Scoop_count is: ", scoop_count)
-
-        # Math to calculate price
-        scoop_price = 3
-        if scoop_count > 1:
-            scoop_price += (scoop_count - 1)
-        update_finances(sales_change=scoop_price)
-    else:
-        messagebox.showerror("ERROR - insufficient inventory for order")
-
-    cur.execute("SELECT id FROM orders WHERE id = (SELECT MAX(id) FROM orders);")
+    cur.execute("SELECT MAX(id) FROM orders;")
     result = cur.fetchone()
-    if result:  # this if guard ensures that if there are no orders placed we begin indexing at 1, else increment by 1
-        new_id = int(result[0]) + 1
+    if result:  # this ensures that if there are no orders placed we begin indexing at 1, else set new_id to max
+        new_id = int(result[0])
     else:
-        new_id = 1
+        new_id = 0
 
-    # TODO for each line_item in line_orders, create an SQL statement to add it to "orders" table
-    #   (don't forget to increase id by using the new_id above and incrementing by 1 for each order in line_orders list)
+    idx = 0
+    for order in order_details:
+        new_id += 1
+        scoop_count = int(order[0])
+
+        chocolate_needed = scoop_count * 4 * int(order[1])
+        vanilla_needed = scoop_count * 4 * int(order[2])
+        sprinkles_needed = float(order[3]) * .25
+        cream_needed = int(order[4]) * 1
+        fudge_needed = float(order[5]) * .5
+
+        # Ensuring process only runs if there is adequate inventory
+        if (
+                CHOCOLATE >= chocolate_needed
+                and VANILLA >= vanilla_needed
+                and SPRINKLES >= sprinkles_needed
+                and WHIP_CREAM >= cream_needed
+                and HOT_F >= fudge_needed
+        ):
+            # Simple math to calculate updates and update storage variables
+            CHOCOLATE -= chocolate_needed
+            VANILLA -= vanilla_needed
+            SPRINKLES -= sprinkles_needed
+            WHIP_CREAM -= cream_needed
+            HOT_F -= fudge_needed
+            # print("***DEBUGGING*** Scoop_count is: ", scoop_count)
+            cur.execute("""
+                    UPDATE inventory
+                    SET vanilla = ?, chocolate = ?, sprinkles = ?, whipcream = ?, hotfudge = ?
+                    WHERE id = 1;
+                """, (VANILLA, CHOCOLATE, SPRINKLES, WHIP_CREAM, HOT_F))
+
+            # Math to calculate price
+            scoop_price = 3
+            if scoop_count > 1:
+                scoop_price += (scoop_count - 1)
+            update_finances(sales_change=scoop_price)
+            cur.execute("""INSERT INTO orders(id, orderNumber, lineItemText) VALUES (?, ?, ?);""",
+                        (new_id, new_id, line_orders[idx]))
+        else:
+            messagebox.showerror("ERROR - insufficient inventory for order")
+        idx += 1
+
+    # done for each line_item in line_orders, create an SQL statement to add it to "orders" table
     # TODO clear line item box
     # TODO clear global line_orders and order_details
     update_displays()
@@ -229,7 +256,12 @@ def update_finances(expense_change=0, sales_change=0):
     #   the profit is calculated by subtracting the expenses from the sales.
     PROFIT = SALES - EXPENSES
 
-    # TODO write SQL statement to reflect the changes in the above
+    # done write SQL statement to reflect the changes in the above
+    cur.execute("""
+            UPDATE finances
+            SET sales = ?, expenses = ? 
+            WHERE id = 1;
+        """, (SALES, EXPENSES))
 
 
 def past_orders():
@@ -324,12 +356,7 @@ chk_cream.grid(row=4, column=5, sticky=tk.W)
 # Hot Fudge checkbox (order form)
 chk_fudge = tk.Checkbutton(root_window, text="Hot Fudge", variable=chk_fudge_var)
 chk_fudge.grid(row=5, column=5, sticky=tk.W)
-# add to order button
-tk.Button(root_window, text="Add To Order", command=add_order).grid(row=6, column=5, sticky=tk.W)
-#cancel order button
-tk.Button(root_window, text="Cancel Order", command=cancel_order).grid(row=6, column=5, sticky=tk.W)
-# Place Order button
-tk.Button(root_window, text="Place Order", command=place_order).grid(row=6, column=5, sticky=tk.W)
+
 
 
 # FINANCIAL DATA
@@ -347,7 +374,13 @@ lbl_profit_output.grid(row=3, column=8, sticky=tk.W)
 
 # TODO ADD Past Orders. also add a show order details button note that the line the user selects will be notes
 #  when the button is pressed. the button should call show_details
-
+#   NOTE the row/column values will need to be changed to reflect new lay out
+# add to order button
+tk.Button(root_window, text="Add To Order", command=add_order).grid(row=6, column=5, sticky=tk.W)
+#cancel order button
+tk.Button(root_window, text="Cancel Order", command=cancel_order).grid(row=6, column=5, sticky=tk.W)
+# Place Order button
+tk.Button(root_window, text="Place Order", command=place_order).grid(row=6, column=5, sticky=tk.W)
 
 # TODO add LINE ITEMS -- psgpt
 # TODO add PAST ORDER DETAILS -- psgpt
