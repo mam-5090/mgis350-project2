@@ -4,7 +4,7 @@ Group 3
 Project 3 due 4/29/24 11:59
 @author Madeline Mariano mam5090
 @author Poonam S psgpt
-@author
+@author Parker Barnaby plb359
 @author
 @author
 
@@ -279,7 +279,9 @@ def update_line_items():
     global line_orders
     if len(line_orders) == 0:
         pass
+
         # TODO CLEAR THE BOX
+
     for order in line_orders:
         pass
         # TODO display this order in the line orders text box. see write up
@@ -393,19 +395,42 @@ lbl_expenses_output.grid(row=2, column=8, sticky=tk.W)
 lbl_profit_output = tk.Label(root_window, text="0")
 lbl_profit_output.grid(row=3, column=8, sticky=tk.W)
 
-# TODO ADD Past Orders. also add a show order details button note that the line the user selects will be notes
+# TODO ADD Past Orders. also add a show order details button note that the line the user selects will be notes - DONE plb3059
+frm_pastorder = tk.Frame(root_window)
+frm_pastorder.grid(row=7, column=3, sticky=tk.E)
+tk.Label(frm_pastorder, text="\tPast Orders").grid(column=0, row=0, sticky=tk.W)
+lst_pastorder = tk.Listbox(frm_pastorder, height=5, width=25, selectmode=tk.SINGLE)
+lst_pastorder.grid(column=0, row=1, sticky=tk.E)
+scr_pastorder = tk.Scrollbar(frm_pastorder, command=lst_pastorder.yview)
+scr_pastorder.grid(row=1, column=1)
+# Create button
+tk.Button(root_window, text="Show Order Details", command=show_details).grid(row=8, column=3, sticky=tk.W)
 #  when the button is pressed. the button should call show_details
 #   NOTE the row/column values will need to be changed to reflect new lay out
 # add to order button
 tk.Button(root_window, text="Add To Order", command=add_order).grid(row=6, column=5, sticky=tk.W)
 # cancel order button
-tk.Button(root_window, text="Cancel Order", command=cancel_order).grid(row=6, column=5, sticky=tk.W)
+tk.Button(root_window, text="Cancel Order", command=cancel_order).grid(row=9, column=5, sticky=tk.W)
 # Place Order button
-tk.Button(root_window, text="Place Order", command=place_order).grid(row=6, column=5, sticky=tk.W)
+tk.Button(root_window, text="Place Order", command=place_order).grid(row=8, column=5, sticky=tk.W)
 
-# TODO add LINE ITEMS -- psgpt
-# TODO add PAST ORDER DETAILS -- psgpt
-
+# TODO add LINE ITEMS -- psgpt - DONE plb3509
+frm_line_items = tk.Frame(root_window)
+frm_line_items.grid(row=7, column=5, sticky=tk.E)
+tk.Label(frm_line_items, text="\tLine Items").grid(column=0, row=0, sticky=tk.W)
+lst_line_items = tk.Listbox(frm_line_items, height=5, width=25, selectmode=tk.SINGLE)
+lst_line_items.grid(column=0, row=1, sticky=tk.E)
+scr_line_items = tk.Scrollbar(frm_line_items, command=lst_line_items.yview)
+scr_line_items.grid(row=1, column=1, sticky=tk.E)
+lst_line_items['yscrollcommand'] = scr_line_items
+# TODO add PAST ORDER DETAILS -- psgpt - DONE plb3509
+frm_pastorder_det = tk.Frame(root_window)
+frm_pastorder_det.grid(row=7, column=7, sticky=tk.E)
+tk.Label(frm_pastorder_det, text="\tPast Order Details").grid(column=0, row=0, sticky=tk.W)
+lst_pastorder_det = tk.Listbox(frm_pastorder_det, height=5, width=25, selectmode=tk.SINGLE)
+lst_pastorder_det.grid(column=0, row=1, sticky=tk.E)
+scr_pastorder_det = tk.Scrollbar(frm_pastorder_det, command=lst_pastorder_det.yview)
+scr_pastorder_det.grid(row=1, column=1)
 root_window.mainloop()
 
 # Close the cursor and connection
