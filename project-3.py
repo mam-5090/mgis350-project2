@@ -150,7 +150,7 @@ def add_order():
     order_det = f"{scoop_count}"
     flv = flavor_choice.get()
     if flv == "Chocolate":
-        order_det += "00"
+        order_det += "10"
         flv = " Chocolate"
     if flv == "Vanilla":
         order_det += "01"
@@ -202,11 +202,12 @@ def place_order():
 
     cur.execute("SELECT MAX(id) FROM orders;")
     result = cur.fetchone()
-    if result is not None:  # this ensures that if there are no orders placed we begin indexing at 1, else set new_id to max
+    if result[0] is not None:  # this ensures that if there are no orders placed we begin indexing at 1, else set new_id to max
         new_id = int(result[0])
     else:
         new_id = 0
 
+    print(new_id) #testing
     idx = 0
     for order in order_details:
         new_id += 1
@@ -217,6 +218,13 @@ def place_order():
         sprinkles_needed = float(order[3]) * .25
         cream_needed = int(order[4]) * 1
         fudge_needed = float(order[5]) * .5
+
+        # DEBUGGING:
+        print(CHOCOLATE >= chocolate_needed,
+                VANILLA >= vanilla_needed,
+                 SPRINKLES >= sprinkles_needed,
+                 WHIP_CREAM >= cream_needed,
+                 HOT_F >= fudge_needed)
 
         # Ensuring process only runs if there is adequate inventory
         if (
@@ -238,7 +246,6 @@ def place_order():
                     SET vanilla = ?, chocolate = ?, sprinkles = ?, whipcream = ?, hotfudge = ?
                     WHERE id = 1;
                 """, (VANILLA, CHOCOLATE, SPRINKLES, WHIP_CREAM, HOT_F))
-            conn.commit()
 
             # Math to calculate price
             scoop_price = 3
@@ -247,6 +254,7 @@ def place_order():
             update_finances(sales_change=scoop_price)
             cur.execute("""INSERT INTO orders(id, orderNumber, lineItemText) VALUES (?, ?, ?);""",
                         (new_id, new_id, line_orders[idx]))
+            conn.commit()
         else:
             messagebox.showerror("ERROR", "Insufficient inventory for order")
         idx += 1
@@ -282,7 +290,6 @@ def update_line_items():
     global line_orders
     if len(line_orders) == 0:
         pass
-
         # TODO CLEAR THE BOX
 
     for order in line_orders:
@@ -398,7 +405,7 @@ lbl_expenses_output.grid(row=2, column=8, sticky=tk.W)
 lbl_profit_output = tk.Label(root_window, text=PROFIT)
 lbl_profit_output.grid(row=3, column=8, sticky=tk.W)
 
-# TODO ADD Past Orders. also add a show order details button note that the line the user selects will be notes - DONE plb3059
+# ADD Past Orders. also add a show order details button note that the line the user selects will be notes - DONE plb3059
 frm_pastorder = tk.Frame(root_window)
 frm_pastorder.grid(row=7, column=3, sticky=tk.E)
 tk.Label(frm_pastorder, text="\tPast Orders").grid(column=0, row=0, sticky=tk.W)
