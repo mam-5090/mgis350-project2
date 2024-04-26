@@ -70,15 +70,16 @@ order_details = list()
 # Create variables for financial data
 cur.execute("SELECT sales, expenses FROM finances WHERE id = 1;")
 row = cur.fetchone()
-SALES = 0.00
-EXPENSES = 0.00
+print(row)
 
 if row:
-    SALES = row[0]
-    EXPENSES = row[1]
+    SALES = float(row[0])
+    EXPENSES = float(row[1])
 else:
     cur.execute("INSERT INTO finances (id, sales, expenses) VALUES (1, 0.0, 0.0);")
     conn.commit()
+    SALES = 0.00
+    EXPENSES = 0.00
 
 PROFIT = SALES-EXPENSES
 order_revenue = 0.00
@@ -140,9 +141,9 @@ def add_order():
     scoop_count = ent_scoops.get()
 
     if scoop_count.isnumeric() is False:
-        messagebox.showerror("ERROR - type in an integer for scoops")
+        messagebox.showerror("ERROR", "Type in an integer for scoops")
     elif int(scoop_count) < 1:
-        messagebox.showerror("ERROR - must have at least one scoop")
+        messagebox.showerror("ERROR", "Must have at least one scoop")
     else:
         scoop_count = int(scoop_count)
 
@@ -201,7 +202,7 @@ def place_order():
 
     cur.execute("SELECT MAX(id) FROM orders;")
     result = cur.fetchone()
-    if result:  # this ensures that if there are no orders placed we begin indexing at 1, else set new_id to max
+    if result is not None:  # this ensures that if there are no orders placed we begin indexing at 1, else set new_id to max
         new_id = int(result[0])
     else:
         new_id = 0
@@ -247,7 +248,7 @@ def place_order():
             cur.execute("""INSERT INTO orders(id, orderNumber, lineItemText) VALUES (?, ?, ?);""",
                         (new_id, new_id, line_orders[idx]))
         else:
-            messagebox.showerror("ERROR - insufficient inventory for order")
+            messagebox.showerror("ERROR", "Insufficient inventory for order")
         idx += 1
 
     # done for each line_item in line_orders, create an SQL statement to add it to "orders" table
@@ -274,6 +275,8 @@ def update_finances(expense_change=0, sales_change=0):
             WHERE id = 1;
         """, (SALES, EXPENSES))
     conn.commit()
+    update_displays()
+
 
 def update_line_items():
     global line_orders
@@ -388,11 +391,11 @@ tk.Label(root_window, text="\tSales:").grid(row=1, column=7, sticky=tk.W)
 tk.Label(root_window, text="\tExpenses:").grid(row=2, column=7, sticky=tk.W)
 tk.Label(root_window, text="\tProfit:").grid(row=3, column=7, sticky=tk.W)
 
-lbl_sales_output = tk.Label(root_window, text="0")
+lbl_sales_output = tk.Label(root_window, text=SALES)
 lbl_sales_output.grid(row=1, column=8, sticky=tk.W)
-lbl_expenses_output = tk.Label(root_window, text="0")
+lbl_expenses_output = tk.Label(root_window, text=EXPENSES)
 lbl_expenses_output.grid(row=2, column=8, sticky=tk.W)
-lbl_profit_output = tk.Label(root_window, text="0")
+lbl_profit_output = tk.Label(root_window, text=PROFIT)
 lbl_profit_output.grid(row=3, column=8, sticky=tk.W)
 
 # TODO ADD Past Orders. also add a show order details button note that the line the user selects will be notes - DONE plb3059
@@ -414,7 +417,7 @@ tk.Button(root_window, text="Cancel Order", command=cancel_order).grid(row=9, co
 # Place Order button
 tk.Button(root_window, text="Place Order", command=place_order).grid(row=8, column=5, sticky=tk.W)
 
-# TODO add LINE ITEMS -- psgpt - DONE plb3509
+#  add LINE ITEMS DONE plb3509
 frm_line_items = tk.Frame(root_window)
 frm_line_items.grid(row=7, column=5, sticky=tk.E)
 tk.Label(frm_line_items, text="\tLine Items").grid(column=0, row=0, sticky=tk.W)
@@ -423,7 +426,7 @@ lst_line_items.grid(column=0, row=1, sticky=tk.E)
 scr_line_items = tk.Scrollbar(frm_line_items, command=lst_line_items.yview)
 scr_line_items.grid(row=1, column=1, sticky=tk.E)
 lst_line_items['yscrollcommand'] = scr_line_items
-# TODO add PAST ORDER DETAILS -- psgpt - DONE plb3509
+#  add PAST ORDER DETAILS DONE plb3509
 frm_pastorder_det = tk.Frame(root_window)
 frm_pastorder_det.grid(row=7, column=7, sticky=tk.E)
 tk.Label(frm_pastorder_det, text="\tPast Order Details").grid(column=0, row=0, sticky=tk.W)
@@ -431,6 +434,7 @@ lst_pastorder_det = tk.Listbox(frm_pastorder_det, height=5, width=25, selectmode
 lst_pastorder_det.grid(column=0, row=1, sticky=tk.E)
 scr_pastorder_det = tk.Scrollbar(frm_pastorder_det, command=lst_pastorder_det.yview)
 scr_pastorder_det.grid(row=1, column=1)
+
 root_window.mainloop()
 
 # Close the cursor and connection
