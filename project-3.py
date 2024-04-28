@@ -294,7 +294,7 @@ def update_line_items():
 
     for order in line_orders:
         pass
-        # TODO display this order in the line orders text box. see write up - km7138
+        # TODO display this order in the line orders text box. see write up 
 
 
 def past_orders():
