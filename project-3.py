@@ -97,7 +97,6 @@ def update_displays():
     lbl_profit_output["text"] = PROFIT
     past_orders()
     # TODO change PAST ORDER DETAILS-- psgpt
-    # TODO update line items -- psgpt
 
 
 def add_inventory():
@@ -196,7 +195,7 @@ def place_order():
     global CHOCOLATE, VANILLA, SPRINKLES, WHIP_CREAM, HOT_F, order_details, line_orders
 
     # DONE set values of needed variables below to the index in the string of order_details.
-    # DONE will need to be a for loop since order_details is a list of strings of numbers. don't forget to cast the value as an int
+    # DONE will need to be a for loop since order_details is a list of strings of numbers.
 
     # ORDER OF VALUES IN ELEMENTS OF ORDER_DETAILS scoops choc van sprinkles whippedcream hotfudge
     # the elements in order_details for example could be 310001 and that would be 3 scoops of chocolate with hot fudge
@@ -204,7 +203,7 @@ def place_order():
 
     cur.execute("SELECT MAX(id) FROM orders;")
     result = cur.fetchone()
-    if result[0] is not None:  # this ensures that if there are no orders placed we begin indexing at 1, else set new_id to max
+    if result[0] is not None:  # if there are no orders placed we begin at 1, else set new_id to max
         new_id = int(result[0])
     else:
         new_id = 0
@@ -264,7 +263,7 @@ def place_order():
     # done for each line_item in line_orders, create an SQL statement to add it to "orders" table
     # done clear global line_orders and order_details
 
-    cancel_order() # note this isn't actually canceling the order, it is just clearing the screen
+    cancel_order()  # note this isn't actually canceling the order, it is just clearing the screen
     update_displays()
 
 
@@ -291,13 +290,10 @@ def update_finances(expense_change=0, sales_change=0):
 def update_line_items():
     global line_orders
     if len(line_orders) == 0:
-        pass
-        # TODO this must be updated to clear the lst_line_items of old values
-    else:
         lst_line_items.delete(0, tk.END)
-
-    for order in line_orders:
-        lst_line_items.insert(tk.END, order)
+    else:
+        for order in line_orders:
+            lst_line_items.insert(tk.END, order)
 
 
 def past_orders():
