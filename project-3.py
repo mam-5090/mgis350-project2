@@ -177,6 +177,7 @@ def add_order():
     order = f"{scoop_count} Scoops{flv}{sp}{wc}{fudge}"
     line_orders.append(order)
     order_details.append(order_det)
+    update_line_items()
     #  TODO update line items display box
 
 
@@ -286,15 +287,15 @@ def update_finances(expense_change=0, sales_change=0):
     update_displays()
 
 
-def update_line_items():
+def update_line_items(): #done plb3509
     global line_orders
     if len(line_orders) == 0:
         pass
-        # TODO CLEAR THE BOX
+    else:
+        lst_line_items.delete(0, tk.END)
 
     for order in line_orders:
-        pass
-        # TODO display this order in the line orders text box. see write up 
+        lst_line_items.insert(tk.END, order)
 
 
 def past_orders():
