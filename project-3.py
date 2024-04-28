@@ -178,7 +178,7 @@ def add_order():
     line_orders.append(order)
     order_details.append(order_det)
     update_line_items()
-    #  TODO update line items display box
+    #  TODO update line items display box - Done plb3509
 
 
 def cancel_order():
