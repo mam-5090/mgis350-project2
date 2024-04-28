@@ -1,7 +1,7 @@
 """
 MGIS-350-02 Spring 2024
 Group 3
-Project 3 due 4/29/24 11:59
+Project 3 due 4/29/24 11:59pm
 @author Madeline Mariano mam5090
 @author Poonam S psgpt
 @author Parker Barnaby plb359
@@ -139,46 +139,47 @@ def add_inventory():
 def add_order():
     global order_details, line_orders
     scoop_count = ent_scoops.get()
-
+    # print(flavor_choice.get)
     if scoop_count.isnumeric() is False:
         messagebox.showerror("ERROR", "Type in an integer for scoops")
     elif int(scoop_count) < 1:
         messagebox.showerror("ERROR", "Must have at least one scoop")
+    elif flavor_choice.get() != "Chocolate" and flavor_choice.get() != "Vanilla":
+        messagebox.showerror("ERROR", "Must select an ice cream flavor")
     else:
         scoop_count = int(scoop_count)
+        order_det = f"{scoop_count}"
+        flv = flavor_choice.get()
+        if flv == "Chocolate":
+            order_det += "10"
+            flv = " Chocolate"
+        if flv == "Vanilla":
+            order_det += "01"
+            flv = " Vanilla"
+        sp = ""
+        wc = ""
+        fudge = ""
+        if chk_sprinkles_var.get():
+            sp = " Sprinkles"
+            order_det += "1"
+        else:
+            order_det += "0"
+        if chk_cream_var.get():
+            wc = " Whip Cream"
+            order_det += "1"
+        else:
+            order_det += "0"
+        if chk_fudge_var.get():
+            fudge = " Hot Fudge"
+            order_det += "1"
+        else:
+            order_det += "0"
 
-    order_det = f"{scoop_count}"
-    flv = flavor_choice.get()
-    if flv == "Chocolate":
-        order_det += "10"
-        flv = " Chocolate"
-    if flv == "Vanilla":
-        order_det += "01"
-        flv = " Vanilla"
-    sp = ""
-    wc = ""
-    fudge = ""
-    if chk_sprinkles_var.get():
-        sp = " Sprinkles"
-        order_det += "1"
-    else:
-        order_det += "0"
-    if chk_cream_var.get():
-        wc = " Whip Cream"
-        order_det += "1"
-    else:
-        order_det += "0"
-    if chk_fudge_var.get():
-        fudge = " Hot Fudge"
-        order_det += "1"
-    else:
-        order_det += "0"
-
-    order = f"{scoop_count} Scoops{flv}{sp}{wc}{fudge}"
-    line_orders.append(order)
-    order_details.append(order_det)
-    update_line_items()
-    #  TODO update line items display box - Done plb3509
+        order = f"{scoop_count} Scoops{flv}{sp}{wc}{fudge}"
+        line_orders.append(order)
+        order_details.append(order_det)
+        update_line_items()
+    #   update line items display box - Done plb3509
 
 
 def cancel_order():
@@ -287,10 +288,11 @@ def update_finances(expense_change=0, sales_change=0):
     update_displays()
 
 
-def update_line_items(): #done plb3509
+def update_line_items():
     global line_orders
     if len(line_orders) == 0:
         pass
+        # TODO this must be updated to clear the lst_line_items of old values
     else:
         lst_line_items.delete(0, tk.END)
 
