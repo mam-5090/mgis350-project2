@@ -294,18 +294,18 @@ def update_line_items():
 
     for order in line_orders:
         pass
-        # TODO display this order in the line orders text box. see write up
+        # TODO display this order in the line orders text box. see write up - km7138
 
 
 def past_orders():
     pass
-    # TODO populate the ID numbers of past orders into the textbox(?). see write up
+    # TODO populate the ID numbers of past orders into the textbox(?). see write up - km7138
     #  note THIS WILL REQUIRE SQL CALLS
 
 
 def show_details():
     pass
-    # TODO show order details of selected order in the PASTORDERS box. see write up
+    # TODO show order details of selected order in the PASTORDERS box. see write up - km7138
     #  note THIS WILL REQUIRE SQL CALLS
 
 
