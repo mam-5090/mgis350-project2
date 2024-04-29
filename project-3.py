@@ -7,14 +7,12 @@ Project 3 due 4/29/24 11:59pm
 @author Parker Barnaby plb359
 @author Kyeni Musembi km7138
 @author Julian Mika   jam6873
-
 """
 import tkinter as tk
 import sqlite3
 import pathlib
 from tkinter import messagebox
 import json
-
 
 db_file = pathlib.Path("Project 3 Database - Template.sqlite3")
 
@@ -32,7 +30,7 @@ else:
 # create tables if not exist
 fin_tbl = "CREATE TABLE IF NOT EXISTS finances( id INT primary key, sales REAL, expenses REAL);"
 inv_tbl = ("CREATE TABLE IF NOT EXISTS inventory( id INT primary key, vanilla REAL, chocolate REAL, sprinkles REAL, "
-       "whipcream REAL, hotfudge REAL);")
+           "whipcream REAL, hotfudge REAL);")
 ord_tbl = "CREATE TABLE IF NOT EXISTS orders( id INT primary key, orderNumber INT, lineItemText TEXT);"
 
 cur.execute(fin_tbl)
@@ -65,7 +63,6 @@ print(VANILLA)
 line_orders = list()
 order_details = list()
 # scoops choc van sprinkles whippedcream hotfudge
-
 # Create variables for financial data
 cur.execute("SELECT sales, expenses FROM finances WHERE id = 1;")
 row = cur.fetchone()
@@ -80,7 +77,7 @@ else:
     SALES = 0.00
     EXPENSES = 0.00
 
-PROFIT = SALES-EXPENSES
+PROFIT = SALES - EXPENSES
 order_revenue = 0.00
 
 
@@ -96,12 +93,10 @@ def update_displays():
     lbl_profit_output["text"] = PROFIT
     past_orders()
     update_line_items()
-    # TODO change PAST ORDER DETAILS-- psgpt
 
 
 def add_inventory():
     global VANILLA, CHOCOLATE, SPRINKLES, WHIP_CREAM, HOT_F
-
     amount_spent = 0
     if chk_vanilla_var.get() == 1:
         amount_spent += 15.00  # Cost of adding vanilla
@@ -122,8 +117,6 @@ def add_inventory():
     #   Updating financial data
     update_finances(expense_change=amount_spent)
 
-    # cur.execute("SELECT vanilla, chocolate,sprinkles,whipcream,hotfudge FROM inventory WHERE id = 1;")
-    # print(cur.fetchone())
     cur.execute("""
          UPDATE inventory
          SET vanilla = ?, chocolate = ?, sprinkles = ?, whipcream = ?, hotfudge = ?
@@ -131,7 +124,6 @@ def add_inventory():
     conn.commit()
     cur.execute("SELECT vanilla, chocolate,sprinkles,whipcream,hotfudge FROM inventory WHERE id = 1;")
     print(cur.fetchone())
-
     update_displays()
 
 
@@ -187,6 +179,7 @@ def cancel_order():
     order_details.clear()
     update_line_items()
 
+
 # done clear order_details lst (global)
 # done clear line_orders lst (global)
 
@@ -220,13 +213,12 @@ def place_order():
             scoop_price += (scoop_count - 1)
         cost += scoop_price
 
-
     # DEBUGGING:
     print(CHOCOLATE >= chocolate_needed,
-            VANILLA >= vanilla_needed,
-             SPRINKLES >= sprinkles_needed,
-             WHIP_CREAM >= cream_needed,
-             HOT_F >= fudge_needed)
+          VANILLA >= vanilla_needed,
+          SPRINKLES >= sprinkles_needed,
+          WHIP_CREAM >= cream_needed,
+          HOT_F >= fudge_needed)
 
     if len(line_orders) == 0:
         messagebox.showerror("ERROR", "Add an order to place first.")
@@ -300,7 +292,7 @@ def update_line_items():
     if len(line_orders) == 0:
         lst_line_items.delete(0, tk.END)
     else:
-        last = len(line_orders)-1
+        last = len(line_orders) - 1
         order = line_orders[last]
         lst_line_items.insert(tk.END, order)
 
@@ -309,7 +301,7 @@ def past_orders():
     #  populate the ID numbers of past orders into the textbox(?). see write up - km7138
     #  note THIS WILL REQUIRE SQL CALLS
 
-    #Clearing previous entries in the list
+    # Clearing previous entries in the list
     lst_pastorder.delete(0, tk.END)
 
     # Fetching past order IDs from the database
@@ -346,7 +338,6 @@ def show_details():
                 lst_pastorder_det.insert(tk.END, item)
 
 
-
 # Creating window
 root_window = tk.Tk()
 root_window.title("Ice Cream Shop; Project 3")
@@ -370,7 +361,6 @@ lbl_cream = tk.Label(root_window, text=WHIP_CREAM)
 lbl_cream.grid(row=4, column=1, sticky=tk.W)
 lbl_fudge = tk.Label(root_window, text=HOT_F)
 lbl_fudge.grid(row=5, column=1, sticky=tk.W)
-
 
 # ADD TO INVENTORY
 tk.Label(root_window, text="\tADD TO INVENTORY").grid(row=0, column=3)
@@ -397,7 +387,6 @@ chk_fudge_add = tk.Checkbutton(root_window, text="Add 48.0 oz of Hot Fudge", var
 chk_fudge_add.grid(row=5, column=3, sticky=tk.W)
 
 tk.Button(root_window, text="Add To Inventory", command=add_inventory).grid(row=6, column=3, sticky=tk.W)
-
 
 # ORDER FORM
 tk.Label(root_window, text="\tORDER FORM").grid(row=0, column=4)
@@ -427,8 +416,6 @@ chk_cream.grid(row=4, column=5, sticky=tk.W)
 # Hot Fudge checkbox (order form)
 chk_fudge = tk.Checkbutton(root_window, text="Hot Fudge", variable=chk_fudge_var)
 chk_fudge.grid(row=5, column=5, sticky=tk.W)
-
-
 
 # FINANCIAL DATA
 tk.Label(root_window, text="\tFINANCIAL DATA").grid(row=0, column=7)
@@ -485,4 +472,3 @@ root_window.mainloop()
 # Close the cursor and connection
 cur.close()
 conn.close()
-
