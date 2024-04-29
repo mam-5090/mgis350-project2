@@ -8,13 +8,13 @@ Project 3 due 4/29/24 11:59pm
 @author Kyeni Musembi km7138
 @author Julian Mika   jam6873
 
-
 """
 import tkinter as tk
-from tkinter import ttk
 import sqlite3
 import pathlib
 from tkinter import messagebox
+import json
+
 
 db_file = pathlib.Path("Project 3 Database - Template.sqlite3")
 
@@ -192,77 +192,85 @@ def cancel_order():
 
 def place_order():
     global CHOCOLATE, VANILLA, SPRINKLES, WHIP_CREAM, HOT_F, order_details, line_orders
-
     # DONE set values of needed variables below to the index in the string of order_details.
     # DONE will need to be a for loop since order_details is a list of strings of numbers.
 
     # ORDER OF VALUES IN ELEMENTS OF ORDER_DETAILS scoops choc van sprinkles whippedcream hotfudge
     # the elements in order_details for example could be 310001 and that would be 3 scoops of chocolate with hot fudge
     # first number is num of scoops, 0 indicates not in order, 1 indicates yes in order
+    chocolate_needed = 0
+    vanilla_needed = 0
+    sprinkles_needed = 0.00
+    cream_needed = 0
+    fudge_needed = 0.0
+    cost = 0
 
-    cur.execute("SELECT MAX(id) FROM orders;")
-    result = cur.fetchone()
-    if result[0] is not None:  # if there are no orders placed we begin at 1, else set new_id to max
-        new_id = int(result[0])
-    else:
-        new_id = 0
-
-    print(new_id) #testing
-    idx = 0
     for order in order_details:
-        new_id += 1
         scoop_count = int(order[0])
 
-        chocolate_needed = scoop_count * 4 * int(order[1])
-        vanilla_needed = scoop_count * 4 * int(order[2])
-        sprinkles_needed = float(order[3]) * .25
-        cream_needed = int(order[4]) * 1
-        fudge_needed = float(order[5]) * .5
+        chocolate_needed += scoop_count * 4 * int(order[1])
+        vanilla_needed += scoop_count * 4 * int(order[2])
+        sprinkles_needed += float(order[3]) * .25
+        cream_needed += int(order[4]) * 1
+        fudge_needed += float(order[5]) * .5
 
-        # DEBUGGING:
-        print(CHOCOLATE >= chocolate_needed,
-                VANILLA >= vanilla_needed,
-                 SPRINKLES >= sprinkles_needed,
-                 WHIP_CREAM >= cream_needed,
-                 HOT_F >= fudge_needed)
+        scoop_price = 3
+        if scoop_count > 1:
+            scoop_price += (scoop_count - 1)
+        cost += scoop_price
 
-        # Ensuring process only runs if there is adequate inventory
-        if (
-                CHOCOLATE >= chocolate_needed
-                and VANILLA >= vanilla_needed
-                and SPRINKLES >= sprinkles_needed
-                and WHIP_CREAM >= cream_needed
-                and HOT_F >= fudge_needed
-        ):
-            # Simple math to calculate updates and update storage variables
-            CHOCOLATE -= chocolate_needed
-            VANILLA -= vanilla_needed
-            SPRINKLES -= sprinkles_needed
-            WHIP_CREAM -= cream_needed
-            HOT_F -= fudge_needed
-            # print("***DEBUGGING*** Scoop_count is: ", scoop_count)
-            cur.execute("""
-                    UPDATE inventory
-                    SET vanilla = ?, chocolate = ?, sprinkles = ?, whipcream = ?, hotfudge = ?
-                    WHERE id = 1;
-                """, (VANILLA, CHOCOLATE, SPRINKLES, WHIP_CREAM, HOT_F))
 
-            # Math to calculate price
-            scoop_price = 3
-            if scoop_count > 1:
-                scoop_price += (scoop_count - 1)
-            update_finances(sales_change=scoop_price)
-            cur.execute("""INSERT INTO orders(id, orderNumber, lineItemText) VALUES (?, ?, ?);""",
-                        (new_id, new_id, line_orders[idx]))
-            conn.commit()
+    # DEBUGGING:
+    print(CHOCOLATE >= chocolate_needed,
+            VANILLA >= vanilla_needed,
+             SPRINKLES >= sprinkles_needed,
+             WHIP_CREAM >= cream_needed,
+             HOT_F >= fudge_needed)
+
+    if len(line_orders) == 0:
+        messagebox.showerror("ERROR", "Add an order to place first.")
+    elif (  # Ensuring process only runs if there is adequate inventory
+            CHOCOLATE >= chocolate_needed
+            and VANILLA >= vanilla_needed
+            and SPRINKLES >= sprinkles_needed
+            and WHIP_CREAM >= cream_needed
+            and HOT_F >= fudge_needed
+    ):
+        # Simple math to calculate updates and update storage variables
+        CHOCOLATE -= chocolate_needed
+        VANILLA -= vanilla_needed
+        SPRINKLES -= sprinkles_needed
+        WHIP_CREAM -= cream_needed
+        HOT_F -= fudge_needed
+        # print("***DEBUGGING*** Scoop_count is: ", scoop_count)
+        cur.execute("""
+                UPDATE inventory
+                SET vanilla = ?, chocolate = ?, sprinkles = ?, whipcream = ?, hotfudge = ?
+                WHERE id = 1;
+            """, (VANILLA, CHOCOLATE, SPRINKLES, WHIP_CREAM, HOT_F))
+        update_finances(sales_change=cost)
+
+        cur.execute("SELECT MAX(id) FROM orders;")
+        result = cur.fetchone()
+        if result[0] is not None:  # if there are no orders placed we begin at 1, else set new_id to max
+            new_id = int(result[0]) + 1
         else:
-            messagebox.showerror("ERROR", "Insufficient inventory for order")
-        idx += 1
+            new_id = 1
+        print(new_id)  # testing
+        print(line_orders)  # testing again
+        sql_orders = json.dumps(line_orders)
+
+        cur.execute("""INSERT INTO orders(id, orderNumber, lineItemText) VALUES (?, ?, ?);""",
+                    (new_id, new_id, sql_orders))
+
+        cancel_order()  # note this isn't actually canceling the order, it is just clearing the screen
+    else:
+        messagebox.showerror("ERROR", "Insufficient inventory for order. Cancel order or add inventory.")
 
     # done for each line_item in line_orders, create an SQL statement to add it to "orders" table
     # done clear global line_orders and order_details
 
-    cancel_order()  # note this isn't actually canceling the order, it is just clearing the screen
+    conn.commit()
     update_displays()
 
 
@@ -291,20 +299,20 @@ def update_line_items():
     if len(line_orders) == 0:
         lst_line_items.delete(0, tk.END)
     else:
-        for order in line_orders:
-            lst_line_items.insert(tk.END, order)
+        last = len(line_orders)-1
+        order = line_orders[last]
+        lst_line_items.insert(tk.END, order)
 
 
 def past_orders():
-    pass
-    # TODO populate the ID numbers of past orders into the textbox(?). see write up - km7138
+    #  populate the ID numbers of past orders into the textbox(?). see write up - km7138
     #  note THIS WILL REQUIRE SQL CALLS
 
     #Clearing previous entries in the list
     lst_pastorder.delete(0, tk.END)
 
     # Fetching past order IDs from the database
-    cur.execute("SELECT orderNumber FROM orders ORDER BY id DESC")
+    cur.execute("SELECT orderNumber FROM orders ORDER BY id ASC")
     orders = cur.fetchall()
 
     # Populating the listbox with order numbers
@@ -314,8 +322,7 @@ def past_orders():
 
 
 def show_details():
-    pass
-    # TODO show order details of selected order in the PASTORDERS box. DONE - JULIAN
+    #  show order details of selected order in the PASTORDERS box. DONE - JULIAN
     #  note THIS WILL REQUIRE SQL CALLS
 
     # Get the currently selected order from the listbox
@@ -329,11 +336,14 @@ def show_details():
 
         # Fetching details for the selected order
         cur.execute("SELECT lineItemText FROM orders WHERE orderNumber = ?", (order_number,))
-        details = cur.fetchall()
+        details = cur.fetchone()
 
-        # Populating the details listbox
-        for detail in details:
-            lst_pastorder_det.insert(tk.END, detail[0])
+        if details:
+            # convert the str back to a list
+            line_item_list = json.loads(details[0])
+
+            for item in line_item_list:
+                lst_pastorder_det.insert(tk.END, item)
 
 
 
@@ -469,7 +479,7 @@ lst_pastorder_det = tk.Listbox(frm_pastorder_det, height=5, width=25, selectmode
 lst_pastorder_det.grid(column=0, row=1, sticky=tk.E)
 scr_pastorder_det = tk.Scrollbar(frm_pastorder_det, command=lst_pastorder_det.yview)
 scr_pastorder_det.grid(row=1, column=1)
-
+past_orders()
 root_window.mainloop()
 
 # Close the cursor and connection
