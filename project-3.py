@@ -301,6 +301,25 @@ def past_orders():
     # TODO populate the ID numbers of past orders into the textbox(?). see write up - km7138
     #  note THIS WILL REQUIRE SQL CALLS
 
+CREATE TABLE past_orders (
+    order_id INT PRIMARY KEY AUTO_INCREMENT,
+    customer_name VARCHAR(100) NOT NULL,
+    order_date DATE NOT NULL,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    payment_method VARCHAR(50) NOT NULL,
+    shipping_address VARCHAR(200) NOT NULL
+);
+
+INSERT INTO past_orders (order_id)
+VALUES
+    (23),
+    (41),
+    (38),
+    (21),
+    (34),
+    (12),
+    (19);
+
 
 def show_details():
     pass
