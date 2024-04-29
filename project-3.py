@@ -6,9 +6,8 @@ Project 3 due 4/29/24 11:59pm
 @author Poonam S psgpt
 @author Parker Barnaby plb359
 @author Kyeni Musembi km7138
-@author
+@author Julian Mika   jam6873
 
-(please add your name as you work on the project)
 
 """
 import tkinter as tk
@@ -301,30 +300,41 @@ def past_orders():
     # TODO populate the ID numbers of past orders into the textbox(?). see write up - km7138
     #  note THIS WILL REQUIRE SQL CALLS
 
-CREATE TABLE past_orders (
-    order_id INT PRIMARY KEY AUTO_INCREMENT,
-    customer_name VARCHAR(100) NOT NULL,
-    order_date DATE NOT NULL,
-    total_amount DECIMAL(10, 2) NOT NULL,
-    payment_method VARCHAR(50) NOT NULL,
-    shipping_address VARCHAR(200) NOT NULL
-);
+    #Clearing previous entries in the list
+    lst_pastorder.delete(0, tk.END)
 
-INSERT INTO past_orders (order_id)
-VALUES
-    (23),
-    (41),
-    (38),
-    (21),
-    (34),
-    (12),
-    (19);
+    # Fetching past order IDs from the database
+    cur.execute("SELECT orderNumber FROM orders ORDER BY id DESC")
+    orders = cur.fetchall()
+
+    # Populating the listbox with order numbers
+    for order in orders:
+        lst_pastorder.insert(tk.END, order[0])
+
 
 
 def show_details():
     pass
-    # TODO show order details of selected order in the PASTORDERS box. see write up - km7138
+    # TODO show order details of selected order in the PASTORDERS box. DONE - JULIAN
     #  note THIS WILL REQUIRE SQL CALLS
+
+    # Get the currently selected order from the listbox
+    selection = lst_pastorder.curselection()
+    if selection:
+        selected_index = selection[0]
+        order_number = lst_pastorder.get(selected_index)
+
+        # Clear previous entires in the details listbox
+        lst_pastorder_det.delete(0, tk.END)
+
+        # Fetching details for the selected order
+        cur.execute("SELECT lineItemText FROM orders WHERE orderNumber = ?", (order_number,))
+        details = cur.fetchall()
+
+        # Populating the details listbox
+        for detail in details:
+            lst_pastorder_det.insert(tk.END, detail[0])
+
 
 
 # Creating window
