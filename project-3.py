@@ -95,6 +95,7 @@ def update_displays():
     lbl_expenses_output["text"] = EXPENSES
     lbl_profit_output["text"] = PROFIT
     past_orders()
+    update_line_items()
     # TODO change PAST ORDER DETAILS-- psgpt
 
 
@@ -265,7 +266,7 @@ def place_order():
 
         cancel_order()  # note this isn't actually canceling the order, it is just clearing the screen
     else:
-        messagebox.showerror("ERROR", "Insufficient inventory for order. Cancel order or add inventory.")
+        return messagebox.showerror("ERROR", "Insufficient inventory for order. Cancel order or add inventory.")
 
     # done for each line_item in line_orders, create an SQL statement to add it to "orders" table
     # done clear global line_orders and order_details
