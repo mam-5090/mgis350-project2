@@ -312,13 +312,12 @@ def past_orders():
     lst_pastorder.delete(0, tk.END)
 
     # Fetching past order IDs from the database
-    cur.execute("SELECT orderNumber FROM orders ORDER BY id ASC")
+    cur.execute("SELECT DISTINCT orderNumber FROM orders ORDER BY id ASC")
     orders = cur.fetchall()
 
     # Populating the listbox with order numbers
     for order in orders:
         lst_pastorder.insert(tk.END, order[0])
-
 
 
 def show_details():
